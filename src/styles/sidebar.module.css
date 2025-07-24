@@ -1,0 +1,73 @@
+.sidebar-container {
+    width: 350px;
+    height: 100%;
+}
+
+.logo-container {
+    padding: .5rem 0 .5rem 1rem;
+}
+
+.sidebar {
+    width: 100%;
+    height: 100%;
+    background-color: #00656C;
+    border-top-right-radius: 3rem;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.list-options {
+    list-style: none;
+    padding-top: 3rem;
+    margin: 0;
+}
+
+.option-nav {
+    padding: 1rem;
+    color: #fff;
+    cursor: pointer;
+    border-radius: .5rem;
+}
+
+.option-link {
+    text-decoration: none;
+    color: inherit;
+
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.bi-custom::before {
+    font-size: 1.5rem;
+}
+
+.logout-container {
+    width: 95%;
+    height: 150px;
+    padding: 1rem;
+    color: #fff;
+    border-top: 1px solid #fff;
+    margin: 0 auto;
+}
+
+.logout-text {
+    width: 100%;
+    padding: .7rem;
+    border-radius: .5rem;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+}   
+
+.option-nav:hover,
+.logout-text:hover {
+    background-color: #E1F6F1;
+    color: #00656C;
+    font-weight: bold;
+}

@@ -1,0 +1,76 @@
+.cat-interna-layout {
+    width: 100%; 
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #00656C;
+}
+
+.container {
+    width: 100%;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 1rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 1rem auto;
+}
+
+.row {
+    width: 100%;
+    margin: 0 0 .8rem 0;
+
+    display: flex;
+    gap: .5rem;
+}
+
+.field {
+    height: 40px;
+}
+
+.label-text {
+    color: #18181cde !important;
+}
+
+.btnPrimario {
+    background: #00828C;
+    border: none;
+    padding: 5px 10px;
+    outline: none;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 48px;
+    height: 28px;
+    color: white;
+}
+.btnDisabled {
+    background: #ccc;
+    border: none;
+    padding: 5px 10px;
+    outline: none;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: not-allowed;
+    width: 48px;
+    height: 28px;
+    color: white;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.6); /* fondo blanco semitransparente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050; /* asegúrate que esté por encima de todo */
+}
