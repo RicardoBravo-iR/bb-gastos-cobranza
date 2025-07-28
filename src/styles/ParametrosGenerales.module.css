@@ -1,0 +1,186 @@
+.pageContainer {
+  text-align: center;
+  padding: 0 20px 20px 20px;
+}
+
+.tabsContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 50px;
+}
+
+/* Estilos para la tabla de consulta */
+.tableContainer {
+  display: inline-block;
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+.table {
+  border-collapse: collapse;
+  background-color: #fafafa;
+}
+
+.tableHeader {
+  background-color: #f5f5f5;
+}
+
+.tableHeaderCell {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+}
+
+.tableRow {
+  background-color: #fafafa;
+}
+
+.tableRowAlternate {
+  background-color: #f5f5f5;
+}
+
+.tableCell {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  color: #333;
+}
+
+.tableCellCenter {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.noDataCell {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Estilos para el formulario de ingreso */
+.formContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.buttonContainer {
+  text-align: center;
+}
+
+.submitButton {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #0056b3;
+}
+
+/* Estilos para los botones de acción */
+.actionButton {
+  margin-right: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: white;
+}
+
+.editButton {
+  background-color: #28a745;
+}
+
+.editButton:hover {
+  background-color: #218838;
+}
+
+.deleteButton {
+  background-color: #dc3545;
+}
+
+.deleteButton:hover {
+  background-color: #c82333;
+}
+
+/* Estilos para la configuración */
+.configContainer {
+  margin-top: 20px;
+  max-width: 600px;
+  margin: 20px auto;
+  text-align: left;
+}
+
+.configList {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.configListItem {
+  margin-bottom: 8px;
+} 
+
+.pageTitle{
+    color: #008F9F;
+    margin-bottom: 1.25rem;
+}
+
+.operationTitle{
+    color: #008F9F;
+    margin-bottom: 1.25rem;
+}
+
+.filterContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .filterLabel {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #008F9F; /* mismo color de los títulos */
+    font-family: inherit; /* usa misma fuente que los títulos */
+  }
+  
+  .filterInput {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
