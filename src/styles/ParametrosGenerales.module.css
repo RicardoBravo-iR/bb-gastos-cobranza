@@ -70,18 +70,22 @@
 
 /* Estilos para el formulario de ingreso */
 .formContainer {
-  max-width: 500px;
+  max-width: 80%;
   margin: 0 auto;
   text-align: left;
+  margin-top: 3rem;
 }
 
 .formGroup {
   margin-bottom: 15px;
+  color:#008F9F
 }
 
 .formLabel {
-  display: block;
-  margin-bottom: 5px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #008F9F; /* mismo color de los títulos */
+    font-family: inherit; /* usa misma fuente que los títulos */
 }
 
 .formInput {
@@ -91,8 +95,17 @@
   border-radius: 4px;
 }
 
+.formInputContainer{
+  display: grid;
+  grid-template-columns: 1fr 3fr; /* Label fijo, input flexible */
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 .buttonContainer {
   text-align: center;
+  margin-top: 3rem;
 }
 
 .submitButton {
@@ -198,3 +211,5 @@
 .exportButton:hover {
   background-color: #1b5e3b; 
 }
+
+

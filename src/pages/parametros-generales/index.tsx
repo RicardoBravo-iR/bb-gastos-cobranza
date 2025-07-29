@@ -1,6 +1,7 @@
 'use client';
 
 import { getParametrosGenerales } from "@/api/get-parametros-generales";
+import { postParametroGeneral } from "@/api/post-parametros-generales";
 import React, { useState, useEffect } from 'react';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
@@ -115,32 +116,37 @@ function IngresoParametros() {
 
   return (
     <div className={styles.pageContainer}>
-      <h2>Ingreso de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Ingreso de Parámetros Generales</h2>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Parámetro:</label>
-          <input
-            type="text"
-            name="parametro"
-            value={formData.parametro}
-            onChange={handleChange}
-            required
-            className={styles.formInput}
-          />
+          <div className={styles.formInputContainer}>
+            {/* Este contenedor se manejará con display: flex o grid para que el label tenga ancho fijo */}
+            <label className={styles.formLabel}>PARÁMETRO:</label>
+            <input
+              type="text"
+              name="parametro"
+              value={formData.parametro}
+              onChange={handleChange}
+              required
+              className={styles.formInput}
+            />
+          </div>
         </div>
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Valor:</label>
-          <input
-            type="text"
-            name="valor"
-            value={formData.valor}
-            onChange={handleChange}
-            required
-            className={styles.formInput}
-          />
+          <div className={styles.formInputContainer}>
+            <label className={styles.formLabel}>VALOR:</label>
+            <input
+              type="text"
+              name="valor"
+              value={formData.valor}
+              onChange={handleChange}
+              required
+              className={styles.formInput}
+            />
+          </div>
         </div>
         <div className={styles.buttonContainer}>
-          <button type="submit" className={styles.submitButton}>Guardar Parámetro</button>
+          <button type="submit" className={styles.submitButton}>Ingresar Parámetro</button>
         </div>
       </form>
     </div>
