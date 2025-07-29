@@ -11,7 +11,8 @@ import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import Table from '@/components/tables/Table';
 import FilteredInput from '@/components/labeledInputs/FilteredInput';
 import FormInput from '@/components/formInputs/FormInput'; 
-import ExcelExport from '@/components/buttons/excelExport/ExcelExport'
+import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
+import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import Swal from 'sweetalert2';
 
 function ConsultaParametros() {
@@ -102,7 +103,11 @@ function IngresoParametros() {
       });
       setFormData({ parametro: '', valor: '' });
     } catch (err) {
-      alert("Error al ingresar el parámetro.");
+      Swal.fire({
+        title: "Error al ingresar parámetro!",
+        icon: "error",
+        draggable: true
+      });
     } finally {
       setLoading(false);
       setShowModal(false);
@@ -134,7 +139,7 @@ function IngresoParametros() {
           />
         </div>
         <div className={styles.buttonContainer}>
-          <button type="submit" className={styles.submitButton}>Ingresar Parámetro</button>
+          <RegisterButton type="submit">Ingresar Parámetro</RegisterButton>
         </div>
       </form>
 
