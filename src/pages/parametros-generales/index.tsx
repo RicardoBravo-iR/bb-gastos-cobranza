@@ -1,13 +1,15 @@
 'use client';
 
-import { useParametrosGenerales } from "@/api/use-parametros-generales";
+import { getParametrosGenerales } from "@/api/get-parametros-generales";
 import React, { useState, useEffect } from 'react';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 // Componente para la pestaña de Consulta
 function ConsultaParametros() {
-  const { data, loading, error } = useParametrosGenerales();
+  const { data, loading, error } = getParametrosGenerales();
   const [filter, setFilter] = useState(""); // Nuevo estado para el filtro
 
   const rows = Array.isArray(data) ? data : [];
@@ -16,10 +18,30 @@ function ConsultaParametros() {
     param.parametro.toLowerCase().includes(filter.toLowerCase())
   );
 
+  //Exporta información filtrada
+  const exportToExcel = () => {
+  const worksheet = XLSX.utils.json_to_sheet(filteredRows); // exporta lo que se ve (filtrado)
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Parámetros");
+
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(dataBlob, "parametros-generales.xlsx");
+};
+
+// Exporta todos los datos
+const exportAllToExcel = () => {
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Parámetros");
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(dataBlob, "parametros-generales-completo.xlsx");
+};
+
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Consulta de Parámetros Generales</h2>
-
       {/* Formulario de filtro */}
       <form className={styles.filterContainer}>
         <label htmlFor="paramFilter" className={styles.filterLabel}>PARÁMETRO:</label>
@@ -31,6 +53,14 @@ function ConsultaParametros() {
           onChange={(e) => setFilter(e.target.value)}
           className={styles.filterInput}
         />
+        <div className={styles.exportButtonContainer}>
+          {/*<button onClick={exportToExcel} className={styles.exportButton}>
+            Exportar Excel (filtrado)
+          </button>*/}
+          <button onClick={exportAllToExcel} className={styles.exportButton}>
+            Exportar Excel (todo)
+          </button>
+        </div>
       </form>
 
       {loading && <p>Cargando...</p>}
@@ -119,7 +149,7 @@ function IngresoParametros() {
 
 // Componente para la pestaña de Edición
 function EdicionParametros() {
-  const { data, loading, error } = useParametrosGenerales();
+  const { data, loading, error } = getParametrosGenerales();
   const rows = Array.isArray(data) ? data : [];
 
   return (

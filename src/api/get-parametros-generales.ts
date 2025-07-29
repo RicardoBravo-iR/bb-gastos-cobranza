@@ -78,7 +78,7 @@ async function getCognitoToken() {
   return memoryToken;
 }
 
-export function useParametrosGenerales() {
+export function getParametrosGenerales() {
   const [data, setData] = useState<ParametroGeneral[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
