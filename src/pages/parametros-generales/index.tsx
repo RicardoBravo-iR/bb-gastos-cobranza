@@ -11,6 +11,7 @@ import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import Table from '@/components/tables/Table';
 import FilteredInput from '@/components/labeledInputs/FilteredInput';
 import FormInput from '@/components/formInputs/FormInput'; 
+import ExcelExport from '@/components/buttons/excelExport/ExcelExport'
 import Swal from 'sweetalert2';
 
 function ConsultaParametros() {
@@ -61,9 +62,7 @@ function ConsultaParametros() {
           onChange={(e) => setFilter(e.target.value)}
         />
         <div className={styles.exportButtonContainer}>
-          <button onClick={exportAllToExcel} type="button" className={styles.exportButton}>
-            Exportar Excel
-          </button>
+          <ExcelExport data={data} fileName="parametros-gastos-cobranza.xlsx" label="Exportar Excel" />
         </div>
       </form>
 
