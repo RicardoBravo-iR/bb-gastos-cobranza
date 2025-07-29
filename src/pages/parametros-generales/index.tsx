@@ -7,11 +7,13 @@ import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import ConfirmationModal from '@/components/modals/ConfirmationModal';
+import Table from '@/components/tables/Table';
+import Swal from 'sweetalert2';
 
-// Componente para la pestaña de Consulta
 function ConsultaParametros() {
   const { data, loading, error } = getParametrosGenerales();
-  const [filter, setFilter] = useState(""); // Nuevo estado para el filtro
+  const [filter, setFilter] = useState('');
 
   const rows = Array.isArray(data) ? data : [];
 
@@ -19,88 +21,67 @@ function ConsultaParametros() {
     param.parametro.toLowerCase().includes(filter.toLowerCase())
   );
 
-  //Exporta información filtrada
+  //Exporta solo la data filtrada
+  /*
   const exportToExcel = () => {
-  const worksheet = XLSX.utils.json_to_sheet(filteredRows); // exporta lo que se ve (filtrado)
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Parámetros");
+    const worksheet = XLSX.utils.json_to_sheet(filteredRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Parámetros');
 
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(dataBlob, "parametros-generales.xlsx");
-};
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(dataBlob, 'parametros-generales.xlsx');
+  };
+  */
 
-// Exporta todos los datos
-const exportAllToExcel = () => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Parámetros");
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
-  saveAs(dataBlob, "parametros-generales-completo.xlsx");
-};
+  //Exporta toda la tabla
+  const exportAllToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Parámetros');
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(dataBlob, 'parametros-generales-completo.xlsx');
+  };
 
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Consulta de Parámetros Generales</h2>
-      {/* Formulario de filtro */}
+
+      {/* Filtro */}
       <form className={styles.filterContainer}>
         <label htmlFor="paramFilter" className={styles.filterLabel}>PARÁMETRO:</label>
         <input
           id="paramFilter"
           type="text"
+          autoComplete="off"
           placeholder="Buscar parámetro..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className={styles.filterInput}
         />
         <div className={styles.exportButtonContainer}>
-          {/*<button onClick={exportToExcel} className={styles.exportButton}>
-            Exportar Excel (filtrado)
-          </button>*/}
-          <button onClick={exportAllToExcel} className={styles.exportButton}>
+          <button onClick={exportAllToExcel} type="button" className={styles.exportButton}>
             Exportar Excel
           </button>
         </div>
       </form>
 
+      {/* Tabla */}
       {loading && <p>Cargando...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.tableHeader}>
-                <th className={styles.tableHeaderCell}>Parámetro</th>
-                <th className={styles.tableHeaderCell}>Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.length === 0 ? (
-                <tr>
-                  <td colSpan={2} className={styles.noDataCell}>No hay datos que coincidan</td>
-                </tr>
-              ) : (
-                filteredRows.map((param, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}>
-                    <td className={styles.tableCell}>{param.parametro}</td>
-                    <td className={styles.tableCell}>{param.valor}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table data={filteredRows} />
       )}
     </div>
   );
 }
 
-// Componente para la pestaña de Ingreso
 function IngresoParametros() {
   const [formData, setFormData] = useState({ parametro: '', valor: '' });
   const [showModal, setShowModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -109,20 +90,24 @@ function IngresoParametros() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowModal(true); // Muestra el modal antes de enviar
+    setShowModal(true); // Mostrar modal de confirmación
   };
 
   const handleConfirm = async () => {
-    setIsSubmitting(true);
+    setLoading(true);
     try {
       await postParametroGeneral(formData.parametro, formData.valor);
-      alert("✅ Parámetro ingresado correctamente.");
-      setFormData({ parametro: '', valor: '' }); // Limpia el formulario
-    } catch (error: any) {
-      alert("❌ Error al ingresar el parámetro:\n" + error.message);
+      Swal.fire({
+        title: "Parámetro correctamente ingresado!",
+        icon: "success",
+        draggable: true
+      });
+      setFormData({ parametro: '', valor: '' });
+    } catch (err) {
+      alert("Error al ingresar el parámetro.");
     } finally {
+      setLoading(false);
       setShowModal(false);
-      setIsSubmitting(false);
     }
   };
 
@@ -161,38 +146,20 @@ function IngresoParametros() {
         </div>
       </form>
 
-      {/* Modal de confirmación */}
-      {showModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white', padding: '2rem',
-            borderRadius: '8px', maxWidth: '400px', textAlign: 'center'
-          }}>
-            <p>¿Deseas ingresar el parámetro <strong>{formData.parametro}</strong> con el valor <strong>{formData.valor}</strong>?</p>
-            <div style={{ marginTop: '1.5rem' }}>
-              <button
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-                className={styles.confirmButton}
-                style={{ marginRight: '1rem' }}
-              >
-                {isSubmitting ? 'Enviando...' : 'Confirmar'}
-              </button>
-              <button onClick={() => setShowModal(false)} className={styles.deleteButton}>
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de Confirmación */}
+      <ConfirmationModal
+        isOpen={showModal}
+        title="Confirmar ingreso"
+        message={`¿Deseas ingresar el parámetro "${formData.parametro}" con el valor "${formData.valor}"?`}
+        confirmText="Sí, ingresar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={() => setShowModal(false)}
+        isSubmitting={loading}
+      />
     </div>
   );
 }
-
 
 // Componente para la pestaña de Edición
 function EdicionParametros() {
