@@ -81,44 +81,9 @@
   color:#008F9F
 }
 
-.formLabel {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #008F9F; /* mismo color de los títulos */
-    font-family: inherit; /* usa misma fuente que los títulos */
-}
-
-.formInput {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.formInputContainer{
-  display: grid;
-  grid-template-columns: 1fr 3fr; /* Label fijo, input flexible */
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
 .buttonContainer {
   text-align: center;
   margin-top: 3rem;
-}
-
-.submitButton {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submitButton:hover {
-  background-color: #0056b3;
 }
 
 
@@ -180,20 +145,5 @@
     align-items: center;
     gap: 1rem;
   }
-
-  .exportButton {
-  background-color: #217346; /* verde tipo Excel */
-  color: white;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.exportButton:hover {
-  background-color: #1b5e3b; 
-}
 
 
