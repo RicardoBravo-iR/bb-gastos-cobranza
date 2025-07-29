@@ -59,7 +59,7 @@ const exportAllToExcel = () => {
             Exportar Excel (filtrado)
           </button>*/}
           <button onClick={exportAllToExcel} className={styles.exportButton}>
-            Exportar Excel (todo)
+            Exportar Excel
           </button>
         </div>
       </form>
@@ -98,10 +98,9 @@ const exportAllToExcel = () => {
 
 // Componente para la pestaña de Ingreso
 function IngresoParametros() {
-  const [formData, setFormData] = useState({
-    parametro: '',
-    valor: ''
-  });
+  const [formData, setFormData] = useState({ parametro: '', valor: '' });
+  const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -110,8 +109,21 @@ function IngresoParametros() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Datos a ingresar:', formData);
-    // Aquí iría la lógica para enviar los datos al API
+    setShowModal(true); // Muestra el modal antes de enviar
+  };
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true);
+    try {
+      await postParametroGeneral(formData.parametro, formData.valor);
+      alert("✅ Parámetro ingresado correctamente.");
+      setFormData({ parametro: '', valor: '' }); // Limpia el formulario
+    } catch (error: any) {
+      alert("❌ Error al ingresar el parámetro:\n" + error.message);
+    } finally {
+      setShowModal(false);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,7 +132,6 @@ function IngresoParametros() {
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
           <div className={styles.formInputContainer}>
-            {/* Este contenedor se manejará con display: flex o grid para que el label tenga ancho fijo */}
             <label className={styles.formLabel}>PARÁMETRO:</label>
             <input
               type="text"
@@ -149,9 +160,39 @@ function IngresoParametros() {
           <button type="submit" className={styles.submitButton}>Ingresar Parámetro</button>
         </div>
       </form>
+
+      {/* Modal de confirmación */}
+      {showModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white', padding: '2rem',
+            borderRadius: '8px', maxWidth: '400px', textAlign: 'center'
+          }}>
+            <p>¿Deseas ingresar el parámetro <strong>{formData.parametro}</strong> con el valor <strong>{formData.valor}</strong>?</p>
+            <div style={{ marginTop: '1.5rem' }}>
+              <button
+                onClick={handleConfirm}
+                disabled={isSubmitting}
+                className={styles.confirmButton}
+                style={{ marginRight: '1rem' }}
+              >
+                {isSubmitting ? 'Enviando...' : 'Confirmar'}
+              </button>
+              <button onClick={() => setShowModal(false)} className={styles.deleteButton}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 // Componente para la pestaña de Edición
 function EdicionParametros() {
