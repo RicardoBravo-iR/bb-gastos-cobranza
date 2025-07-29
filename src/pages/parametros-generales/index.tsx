@@ -9,6 +9,8 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import Table from '@/components/tables/Table';
+import FilteredInput from '@/components/labeledInputs/FilteredInput';
+import FormInput from '@/components/formInputs/FormInput'; 
 import Swal from 'sweetalert2';
 
 function ConsultaParametros() {
@@ -51,15 +53,12 @@ function ConsultaParametros() {
 
       {/* Filtro */}
       <form className={styles.filterContainer}>
-        <label htmlFor="paramFilter" className={styles.filterLabel}>PARÁMETRO:</label>
-        <input
+        <FilteredInput
+          label="PARÁMETRO:"
           id="paramFilter"
-          type="text"
-          autoComplete="off"
-          placeholder="Buscar parámetro..."
           value={filter}
+          placeholder="Buscar parámetro..."
           onChange={(e) => setFilter(e.target.value)}
-          className={styles.filterInput}
         />
         <div className={styles.exportButtonContainer}>
           <button onClick={exportAllToExcel} type="button" className={styles.exportButton}>
@@ -116,30 +115,24 @@ function IngresoParametros() {
       <h2 className={styles.operationTitle}>Ingreso de Parámetros Generales</h2>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
-          <div className={styles.formInputContainer}>
-            <label className={styles.formLabel}>PARÁMETRO:</label>
-            <input
-              type="text"
-              name="parametro"
-              value={formData.parametro}
-              onChange={handleChange}
-              required
-              className={styles.formInput}
-            />
-          </div>
+          <FormInput
+            label="PARÁMETRO:"
+            name="parametro"
+            value={formData.parametro}
+            placeholder="Ingrese nemónico del parámetro..."
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className={styles.formGroup}>
-          <div className={styles.formInputContainer}>
-            <label className={styles.formLabel}>VALOR:</label>
-            <input
-              type="text"
-              name="valor"
-              value={formData.valor}
-              onChange={handleChange}
-              required
-              className={styles.formInput}
-            />
-          </div>
+          <FormInput
+            label="VALOR:"
+            name="valor"
+            value={formData.valor}
+            placeholder="Ingrese el valor del parámetro..."
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className={styles.buttonContainer}>
           <button type="submit" className={styles.submitButton}>Ingresar Parámetro</button>

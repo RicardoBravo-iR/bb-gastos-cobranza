@@ -178,25 +178,7 @@
 .filterContainer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 3rem;
-    margin-top: 3rem;
     gap: 1rem;
-  }
-  
-  .filterLabel {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #008F9F; /* mismo color de los títulos */
-    font-family: inherit; /* usa misma fuente que los títulos */
-  }
-  
-  .filterInput {
-    flex: 1;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
   }
 
   .exportButton {

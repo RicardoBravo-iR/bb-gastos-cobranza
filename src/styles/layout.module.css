@@ -3,7 +3,6 @@
     height: 100vh;
     background-color: #E1F6F1;
     overflow: hidden;
-
     display: flex;
     gap: 1rem;
 }
@@ -11,7 +10,7 @@
 .main-container {
     width: 100%;
     height: auto;
-    padding: 1.3rem 1.3rem 1.3rem 1rem;
+    padding: 1.3rem 1.6rem 1.3rem 1rem;
     background-color: #E1F6F1;
     overflow: auto;
 }
