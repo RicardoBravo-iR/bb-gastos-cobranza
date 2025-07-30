@@ -6,11 +6,12 @@ type Props = {
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
   children: React.ReactNode;
+  disabled?: boolean; // <-- AÑADIDO
 };
 
-const RegisterButton: React.FC<Props> = ({ onClick, type = 'button', children }) => {
+const RegisterButton: React.FC<Props> = ({ onClick, type = 'button', children, disabled = false }) => {
   return (
-    <StyledButton type={type} onClick={onClick}>
+    <StyledButton type={type} onClick={onClick} disabled={disabled}>
       {children}
     </StyledButton>
   );

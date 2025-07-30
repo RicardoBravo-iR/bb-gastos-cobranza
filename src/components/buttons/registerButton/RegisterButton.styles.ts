@@ -2,14 +2,21 @@
 import styled from 'styled-components';
 
 export const StyledButton = styled.button`
-  padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #0d6efd;
   color: white;
+  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 
-  &:hover {
-    background-color: #0056b3;
+  &:hover:enabled {
+    background-color: #0b5ed7;
+  }
+
+  &:disabled {
+    background-color: #c0c0c0;
+    cursor: not-allowed;
   }
 `;

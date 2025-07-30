@@ -3,11 +3,10 @@
 import { getParametrosGenerales } from "@/api/get-parametros-generales";
 import { postParametroGeneral } from "@/api/post-parametros-generales";
 import { deleteParametrosGenerales } from "@/api/delete-parametros-generales";
+import { updateParametroGeneral } from "@/api/update-parametros-generales";
 import React, { useState, useEffect } from 'react';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import Table from '@/components/tables/Table';
 import FilteredInput from '@/components/inputs/filteredInputs/FilteredInput';
@@ -191,6 +190,12 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
       }))
     : [];
 
+  const selectedParametro = Array.isArray(data)
+  ? data.find((p) => p.parametro === formData.parametro)
+  : null;
+
+const valorActual = selectedParametro?.valor ?? "";
+
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
@@ -219,7 +224,7 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar el parámetro "${formData.parametro}"?`}
+        message={`¿Deseas eliminar el parámetro "${formData.parametro}" con el valor "${valorActual}"?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
@@ -231,10 +236,112 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
 }
 
 
-function ActualizacionParametros() {
+function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number; onRefresh: () => void }) {
+  const { data: parametros, loading, error } = getParametrosGenerales(refreshKey);
+  const [formData, setFormData] = useState({ parametro: "", valor: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.parametro || !formData.valor) {
+      Swal.fire("Campos requeridos", "Debes completar ambos campos.", "warning");
+      return;
+    }
+
+    const existe = parametros.some((p) => p.parametro === formData.parametro);
+
+    if (!existe) {
+      Swal.fire("Parámetro no encontrado", `El parámetro "${formData.parametro}" no existe.`, "error");
+      return;
+    }
+
+    setShowModal(true);
+  };
+
+  // Preparar opciones para el select
+  const parametroOptions = Array.isArray(parametros)
+    ? parametros.map((p: any) => ({
+        value: p.parametro,
+        label: p.parametro,
+      }))
+    : [];
+
+  const handleConfirmUpdate = async () => {
+    setShowModal(false);
+    setSubmitting(true);
+    try {
+      await updateParametroGeneral(formData.parametro, formData.valor);
+      Swal.fire("Actualización exitosa", `El parámetro "${formData.parametro}" fue actualizado.`, "success");
+      setFormData({ parametro: "", valor: "" });
+      onRefresh();
+    } catch (err: any) {
+      Swal.fire("Error", err.message || "Ocurrió un error al actualizar.", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const selectedParametro = Array.isArray(parametros)
+  ? parametros.find((p) => p.parametro === formData.parametro)
+  : null;
+
+  const valorActual = selectedParametro?.valor ?? "";
+
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Actualización de Parámetros Generales</h2>
+
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {!loading && !error && (
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
+          <div className={styles.formGroup}>
+            <FormSelect
+              label="PARÁMETRO:"
+              name="parametro"
+              value={formData.parametro}
+              options={parametroOptions}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="VALOR:"
+              name="valor"
+              value={formData.valor}
+              placeholder="Ingrese el nuevo valor..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.buttonContainer}>
+            <RegisterButton type="submit" disabled={submitting}>
+              {submitting ? "Actualizando..." : "Actualizar Parámetro"}
+            </RegisterButton>
+          </div>
+        </form>
+      )}
+
+      <ConfirmationModal
+        isOpen={showModal}
+        title="Confirmar actualización"
+        message={`¿Deseas actualizar el parámetro "${formData.parametro}" con el valor "${valorActual}", al nuevo valor "${formData.valor}"?`}
+        confirmText="Sí, actualizar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmUpdate}
+        onCancel={() => setShowModal(false)}
+        isSubmitting={submitting}
+      />
     </div>
   );
 }
@@ -264,7 +371,8 @@ export default function ParametrosGenerales() {
       {activeTab === 'Consulta' && <ConsultaParametros refreshKey={refreshKey} />}
       {activeTab === 'Ingreso' && <IngresoParametros onRefresh={() => setRefreshKey(prev => prev + 1)} />}
       {activeTab === 'Eliminación' && <EliminacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
-      {activeTab === 'Actualización' && <ActualizacionParametros />}
+      {activeTab === 'Actualización' && (<ActualizacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
+)}
     </div>
   );
 }
