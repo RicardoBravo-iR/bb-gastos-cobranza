@@ -10,11 +10,12 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import Table from '@/components/tables/Table';
-import FilteredInput from '@/components/labeledInputs/FilteredInput';
-import FormInput from '@/components/formInputs/FormInput'; 
+import FilteredInput from '@/components/inputs/filteredInputs/FilteredInput';
+import FormInput from '@/components/inputs/formInput/FormInput'; 
 import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
+import FormSelect from '@/components/inputs/formSelect/FormSelect';
 import Swal from 'sweetalert2';
 
 function ConsultaParametros() {
@@ -165,11 +166,12 @@ function IngresoParametros() {
 }
 
 function EliminacionParametros() {
+  const { data, loading: loadingData, error } = getParametrosGenerales();
   const [formData, setFormData] = useState({ parametro: '', valor: '' });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -204,27 +206,39 @@ function EliminacionParametros() {
     }
   };
 
+  // Preparar opciones para el combo
+  const parametroOptions = Array.isArray(data)
+    ? data.map((param: any) => ({
+        value: param.parametro,
+        label: param.parametro,
+      }))
+    : [];
+
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
-      <form onSubmit={handleSubmit} className={styles.formContainer}>
-        <div className={styles.formGroup}>
-          <FormInput
-            label="PARÁMETRO:"
-            name="parametro"
-            value={formData.parametro}
-            placeholder="Ingrese el nombre del parámetro a eliminar..."
-            onChange={handleChange}
-            required
-            autoComplete="off"
-          />
-        </div>
-        <div className={styles.buttonContainer}>
-          <DeleteButton onClick={() => setShowModal(true)}>Eliminar Parámetro</DeleteButton>
-        </div>
-      </form>
 
-      {/* Modal de Confirmación */}
+      {loadingData && <p>Cargando parámetros...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {!loadingData && !error && (
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
+          <div className={styles.formGroup}>
+            <FormSelect
+              label="PARÁMETRO:"
+              name="parametro"
+              value={formData.parametro}
+              options={parametroOptions}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className={styles.buttonContainer}>
+            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Parámetro</DeleteButton>
+          </div>
+        </form>
+      )}
+
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
@@ -239,21 +253,11 @@ function EliminacionParametros() {
   );
 }
 
-// Componente para la pestaña de Configuración
-function ConfiguracionParametros() {
+
+function ActualizacionParametros() {
   return (
     <div className={styles.pageContainer}>
-      <h2>Configuración de Parámetros Generales</h2>
-      <p>Aquí puedes configurar opciones adicionales para el manejo de parámetros.</p>
-      <div className={styles.configContainer}>
-        <h3>Opciones de Configuración</h3>
-        <ul className={styles.configList}>
-          <li className={styles.configListItem}>Configuración de paginación</li>
-          <li className={styles.configListItem}>Configuración de filtros</li>
-          <li className={styles.configListItem}>Configuración de exportación</li>
-          <li className={styles.configListItem}>Configuración de permisos</li>
-        </ul>
-      </div>
+      <h2 className={styles.operationTitle}>Actualización de Parámetros Generales</h2>
     </div>
   );
 }
@@ -261,7 +265,7 @@ function ConfiguracionParametros() {
 export default function ParametrosGenerales() {
   const [activeTab, setActiveTab] = useState('Consulta');
   const [isClient, setIsClient] = useState(false);
-  const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Configuración'];
+  const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Actualización'];
 
   useEffect(() => {
     setIsClient(true);
@@ -281,7 +285,7 @@ export default function ParametrosGenerales() {
       {activeTab === 'Consulta' && <ConsultaParametros />}
       {activeTab === 'Ingreso' && <IngresoParametros />}
       {activeTab === 'Eliminación' && <EliminacionParametros />}
-      {activeTab === 'Configuración' && <ConfiguracionParametros />}
+      {activeTab === 'Actualización' && <ActualizacionParametros />}
     </div>
   );
 }
