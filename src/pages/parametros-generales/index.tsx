@@ -22,7 +22,9 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
   const { data, loading, error } = getParametrosGenerales(refreshKey);
   const [filter, setFilter] = useState('');
 
-  const rows = Array.isArray(data) ? data : [];
+  const rows = Array.isArray(data)
+  ? [...data].sort((a, b) => a.parametro.localeCompare(b.parametro))
+  : [];
 
   const filteredRows = rows.filter((param) =>
     param.parametro.toLowerCase().includes(filter.toLowerCase())
@@ -47,7 +49,7 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
       </form>
 
       {/* Tabla */}
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando datos..." />}
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
         <Table data={filteredRows} />
@@ -184,10 +186,12 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
 
   // Preparar opciones para el combo
   const parametroOptions = Array.isArray(data)
-    ? data.map((param: any) => ({
-        value: param.parametro,
-        label: param.parametro,
-      }))
+    ? [...data]
+        .sort((a, b) => a.parametro.localeCompare(b.parametro))
+        .map((param: any) => ({
+          value: param.parametro,
+          label: param.parametro,
+        }))
     : [];
 
   const selectedParametro = Array.isArray(data)
@@ -200,7 +204,7 @@ const valorActual = selectedParametro?.valor ?? "";
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
 
-      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando datos..." />}
+      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
@@ -267,10 +271,12 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
 
   // Preparar opciones para el select
   const parametroOptions = Array.isArray(parametros)
-    ? parametros.map((p: any) => ({
-        value: p.parametro,
-        label: p.parametro,
-      }))
+    ? [...parametros]
+        .sort((a, b) => a.parametro.localeCompare(b.parametro))
+        .map((param: any) => ({
+          value: param.parametro,
+          label: param.parametro,
+        }))
     : [];
 
   const handleConfirmUpdate = async () => {

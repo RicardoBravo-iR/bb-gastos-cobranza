@@ -1,12 +1,13 @@
 import React from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { ExportButtonContainer, ExportButton } from './ExcelExport.styles';
+import { ExportButtonContainer, ExportButton, Icon } from './ExcelExport.styles';
+import 'bootstrap-icons/font/bootstrap-icons.css'; // Asegura que los íconos estén disponibles
 
 type Props = {
-  data: Record<string, any>[];  // Datos en formato JSON
-  fileName?: string;            // Nombre opcional del archivo
-  label?: string;               // Texto opcional del botón
+  data: Record<string, any>[];
+  fileName?: string;
+  label?: string;
 };
 
 const ExcelExport: React.FC<Props> = ({ data, fileName = 'results.xlsx', label = 'Exportar Excel' }) => {
@@ -28,6 +29,7 @@ const ExcelExport: React.FC<Props> = ({ data, fileName = 'results.xlsx', label =
   return (
     <ExportButtonContainer>
       <ExportButton type="button" onClick={exportAllToExcel}>
+        <Icon className="bi bi-file-earmark-excel" />
         {label}
       </ExportButton>
     </ExportButtonContainer>
