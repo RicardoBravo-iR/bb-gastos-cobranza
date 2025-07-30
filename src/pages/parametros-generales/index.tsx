@@ -29,32 +29,6 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
     param.parametro.toLowerCase().includes(filter.toLowerCase())
   );
 
-  //Exporta solo la data filtrada
-  /*
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Parámetros');
-
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(dataBlob, 'parametros-generales.xlsx');
-  };
-  */
-
-  //Exporta toda la tabla
-  /*
-  const exportAllToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Parámetros');
-
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(dataBlob, 'parametros-generales-completo.xlsx');
-  };
-  */
-
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Consulta de Parámetros Generales</h2>
