@@ -2,6 +2,7 @@
 
 import { getParametrosGenerales } from "@/api/get-parametros-generales";
 import { postParametroGeneral } from "@/api/post-parametros-generales";
+import { deleteParametrosGenerales } from "@/api/delete-parametros-generales";
 import React, { useState, useEffect } from 'react';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
@@ -175,28 +176,27 @@ function EliminacionParametros() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowModal(true); // Mostrar el modal al intentar eliminar
+    setShowModal(true);
   };
 
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      // Aquí deberías llamar a tu API para eliminar el parámetro
-      console.log(`Eliminando parámetro: ${formData.parametro} con valor: ${formData.valor}`);
+      await deleteParametrosGenerales(formData.parametro);
 
-      // Ejemplo con feedback opcional
       Swal.fire({
         title: "Parámetro eliminado correctamente",
         icon: "success",
         timer: 2000,
+        timerProgressBar: true,
       });
 
-      // Reiniciar formulario
       setFormData({ parametro: '', valor: '' });
     } catch (err) {
       Swal.fire({
         title: "Error al eliminar el parámetro",
-        icon: "error"
+        icon: "error",
+        text: (err as Error).message || "",
       });
     } finally {
       setLoading(false);
