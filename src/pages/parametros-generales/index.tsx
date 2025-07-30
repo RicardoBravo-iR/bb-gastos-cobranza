@@ -16,10 +16,11 @@ import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
 import FormSelect from '@/components/inputs/formSelect/FormSelect';
+import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
 
-function ConsultaParametros() {
-  const { data, loading, error } = getParametrosGenerales();
+function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
+  const { data, loading, error } = getParametrosGenerales(refreshKey);
   const [filter, setFilter] = useState('');
 
   const rows = Array.isArray(data) ? data : [];
@@ -73,7 +74,7 @@ function ConsultaParametros() {
       </form>
 
       {/* Tabla */}
-      {loading && <p>Cargando...</p>}
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando datos..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
         <Table data={filteredRows} />
@@ -82,7 +83,7 @@ function ConsultaParametros() {
   );
 }
 
-function IngresoParametros() {
+function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
   const [formData, setFormData] = useState({ parametro: '', valor: '' });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -107,6 +108,7 @@ function IngresoParametros() {
         draggable: true
       });
       setFormData({ parametro: '', valor: '' });
+      onRefresh()
     } catch (err) {
       Swal.fire({
         title: "Error al ingresar parámetro!",
@@ -165,8 +167,8 @@ function IngresoParametros() {
   );
 }
 
-function EliminacionParametros() {
-  const { data, loading: loadingData, error } = getParametrosGenerales();
+function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
+  const { data, loading: loadingData, error } = getParametrosGenerales(refreshKey);
   const [formData, setFormData] = useState({ parametro: '', valor: '' });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -194,6 +196,7 @@ function EliminacionParametros() {
       });
 
       setFormData({ parametro: '', valor: '' });
+      onRefresh()
     } catch (err) {
       Swal.fire({
         title: "Error al eliminar el parámetro",
@@ -218,7 +221,7 @@ function EliminacionParametros() {
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
 
-      {loadingData && <p>Cargando parámetros...</p>}
+      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando datos..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
@@ -266,6 +269,7 @@ export default function ParametrosGenerales() {
   const [activeTab, setActiveTab] = useState('Consulta');
   const [isClient, setIsClient] = useState(false);
   const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Actualización'];
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
@@ -282,9 +286,9 @@ export default function ParametrosGenerales() {
         <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {activeTab === 'Consulta' && <ConsultaParametros />}
-      {activeTab === 'Ingreso' && <IngresoParametros />}
-      {activeTab === 'Eliminación' && <EliminacionParametros />}
+      {activeTab === 'Consulta' && <ConsultaParametros refreshKey={refreshKey} />}
+      {activeTab === 'Ingreso' && <IngresoParametros onRefresh={() => setRefreshKey(prev => prev + 1)} />}
+      {activeTab === 'Eliminación' && <EliminacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
       {activeTab === 'Actualización' && <ActualizacionParametros />}
     </div>
   );

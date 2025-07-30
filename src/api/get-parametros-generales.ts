@@ -7,7 +7,8 @@ export interface ParametroGeneral {
   valor: string;
 }
 
-export function getParametrosGenerales() {
+// Ahora acepta refreshKey como parámetro opcional
+export function getParametrosGenerales(refreshKey: number = 0) {
   const [data, setData] = useState<ParametroGeneral[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function getParametrosGenerales() {
     }
 
     fetchData();
-  }, []);
+  }, [refreshKey]); // Ahora depende de refreshKey
 
   return { data, loading, error };
 }
