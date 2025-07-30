@@ -13,6 +13,7 @@ import FilteredInput from '@/components/labeledInputs/FilteredInput';
 import FormInput from '@/components/formInputs/FormInput'; 
 import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
+import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
 import Swal from 'sweetalert2';
 
 function ConsultaParametros() {
@@ -39,6 +40,7 @@ function ConsultaParametros() {
   */
 
   //Exporta toda la tabla
+  /*
   const exportAllToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -48,6 +50,7 @@ function ConsultaParametros() {
     const dataBlob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(dataBlob, 'parametros-generales-completo.xlsx');
   };
+  */
 
   return (
     <div className={styles.pageContainer}>
@@ -126,6 +129,7 @@ function IngresoParametros() {
             placeholder="Ingrese nemónico del parámetro..."
             onChange={handleChange}
             required
+            autoComplete="off"
           />
         </div>
         <div className={styles.formGroup}>
@@ -136,6 +140,7 @@ function IngresoParametros() {
             placeholder="Ingrese el valor del parámetro..."
             onChange={handleChange}
             required
+            autoComplete="off"
           />
         </div>
         <div className={styles.buttonContainer}>
@@ -158,47 +163,78 @@ function IngresoParametros() {
   );
 }
 
-// Componente para la pestaña de Edición
-function EdicionParametros() {
-  const { data, loading, error } = getParametrosGenerales();
-  const rows = Array.isArray(data) ? data : [];
+function EliminacionParametros() {
+  const [formData, setFormData] = useState({ parametro: '', valor: '' });
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowModal(true); // Mostrar el modal al intentar eliminar
+  };
+
+  const handleConfirmDelete = async () => {
+    setLoading(true);
+    try {
+      // Aquí deberías llamar a tu API para eliminar el parámetro
+      console.log(`Eliminando parámetro: ${formData.parametro} con valor: ${formData.valor}`);
+
+      // Ejemplo con feedback opcional
+      Swal.fire({
+        title: "Parámetro eliminado correctamente",
+        icon: "success",
+        timer: 2000,
+      });
+
+      // Reiniciar formulario
+      setFormData({ parametro: '', valor: '' });
+    } catch (err) {
+      Swal.fire({
+        title: "Error al eliminar el parámetro",
+        icon: "error"
+      });
+    } finally {
+      setLoading(false);
+      setShowModal(false);
+    }
+  };
 
   return (
     <div className={styles.pageContainer}>
-      <h2>Edición de Parámetros Generales</h2>
-      {loading && <p>Cargando...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && (
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.tableHeader}>
-                <th className={styles.tableHeaderCell}>Parámetro</th>
-                <th className={styles.tableHeaderCell}>Valor</th>
-                <th className={styles.tableHeaderCell}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.noDataCell}>No hay datos para mostrar</td>
-                </tr>
-              ) : (
-                rows.map((param, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlternate}>
-                    <td className={styles.tableCell}>{param.parametro}</td>
-                    <td className={styles.tableCell}>{param.valor}</td>
-                    <td className={styles.tableCellCenter}>
-                      <button className={`${styles.actionButton} ${styles.editButton}`}>Editar</button>
-                      <button className={`${styles.actionButton} ${styles.deleteButton}`}>Eliminar</button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
+      <form onSubmit={handleSubmit} className={styles.formContainer}>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="PARÁMETRO:"
+            name="parametro"
+            value={formData.parametro}
+            placeholder="Ingrese el nombre del parámetro a eliminar..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
         </div>
-      )}
+        <div className={styles.buttonContainer}>
+          <DeleteButton onClick={() => setShowModal(true)}>Eliminar Parámetro</DeleteButton>
+        </div>
+      </form>
+
+      {/* Modal de Confirmación */}
+      <ConfirmationModal
+        isOpen={showModal}
+        title="Confirmar eliminación"
+        message={`¿Deseas eliminar el parámetro "${formData.parametro}"?`}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowModal(false)}
+        isSubmitting={loading}
+      />
     </div>
   );
 }
@@ -225,7 +261,7 @@ function ConfiguracionParametros() {
 export default function ParametrosGenerales() {
   const [activeTab, setActiveTab] = useState('Consulta');
   const [isClient, setIsClient] = useState(false);
-  const tabs = ['Consulta', 'Ingreso', 'Edición', 'Configuración'];
+  const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Configuración'];
 
   useEffect(() => {
     setIsClient(true);
@@ -244,7 +280,7 @@ export default function ParametrosGenerales() {
 
       {activeTab === 'Consulta' && <ConsultaParametros />}
       {activeTab === 'Ingreso' && <IngresoParametros />}
-      {activeTab === 'Edición' && <EdicionParametros />}
+      {activeTab === 'Eliminación' && <EliminacionParametros />}
       {activeTab === 'Configuración' && <ConfiguracionParametros />}
     </div>
   );

@@ -8,9 +8,10 @@ type Props = {
   placeholder?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  autoComplete?: string;
 };
 
-const FormInput: React.FC<Props> = ({ label, name, value, placeholder, onChange, required = false }) => {
+const FormInput: React.FC<Props> = ({ label, name, value, placeholder, onChange, required = false, autoComplete }) => {
   return (
     <InputContainer>
       <Label htmlFor={name}>{label}</Label>
@@ -22,6 +23,7 @@ const FormInput: React.FC<Props> = ({ label, name, value, placeholder, onChange,
         placeholder={placeholder}
         onChange={onChange}
         required={required}
+        autoComplete={autoComplete}
       />
     </InputContainer>
   );
