@@ -276,7 +276,8 @@ export default function ParametrosGenerales() {
   }, []);
 
   if (!isClient) {
-    return <div className={styles.loadingContainer}>Cargando...</div>;
+    return <div className={styles.loadingContainer}>
+      <LoadingSpinner size="lg" color="#0d6efd" text="Cargando datos..." /></div>;
   }
 
   return (
