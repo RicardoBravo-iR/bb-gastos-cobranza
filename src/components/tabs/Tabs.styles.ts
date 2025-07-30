@@ -44,7 +44,7 @@ export const TabButton = styled.button<{ isActive: boolean }>`
   &:hover {
     background-color: ${props => props.isActive ? '#007A87' : '#E8DDE1'};
     color: ${props => props.isActive ? '#FFFFFF' : '#080F0D'};
-    transform: translateY(-1px);
+    transform: translateY(0px);
   }
 
   &:focus {
@@ -65,7 +65,7 @@ export const TabButton = styled.button<{ isActive: boolean }>`
       left: 0;
       right: 0;
       height: 2px;
-      background-color: #FFFFFF;
+      background-color: '#008F9F';
       border-radius: 1px;
     }
   `}
