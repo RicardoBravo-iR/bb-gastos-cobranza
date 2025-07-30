@@ -14,12 +14,14 @@ type Props = {
   data: Record<string, any>[];
   rowsPerPage?: number;
   noDataText?: string;
+  columnHeaders?: string[];
 };
 
 const Table: React.FC<Props> = ({
   data,
   rowsPerPage = 10,
   noDataText = 'No hay datos disponibles',
+  columnHeaders
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -49,8 +51,10 @@ const Table: React.FC<Props> = ({
         <StyledTable>
           <thead>
             <TableRow>
-              {headers.map((header) => (
-                <TableHeader key={header}>{header.toUpperCase()}</TableHeader>
+              {headers.map((header, index) => (
+                <TableHeader key={header}>
+                  {columnHeaders?.[index] ?? header.toUpperCase()}
+                </TableHeader>
               ))}
             </TableRow>
           </thead>

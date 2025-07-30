@@ -52,7 +52,7 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
       {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
-        <Table data={filteredRows} />
+        <Table data={filteredRows} columnHeaders={['Nemónico', 'Valor']}/>
       )}
     </div>
   );
