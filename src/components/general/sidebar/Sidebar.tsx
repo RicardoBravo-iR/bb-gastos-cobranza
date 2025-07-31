@@ -26,7 +26,7 @@ export default function Sidebar() {
 						</Link>
 					</li>
 					<li className={optionNav}>
-						<Link href="/option-2" className={optionLink}>
+						<Link href="/tarifario-gastos-cobranza" className={optionLink}>
 							<span>Tarifario de Gastos de Cobranza</span>
 						</Link>
 					</li>

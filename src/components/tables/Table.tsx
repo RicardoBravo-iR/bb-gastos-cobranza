@@ -14,14 +14,16 @@ type Props = {
   data: Record<string, any>[];
   rowsPerPage?: number;
   noDataText?: string;
-  columnHeaders?: string[];
+  visibleColumns?: string[]; // claves a mostrar, si no se pasa se infiere de data[0]
+  headerLabels?: Record<string, string>; // renombre de columnas: { originalKey: 'Nombre a mostrar' }
 };
 
 const Table: React.FC<Props> = ({
   data,
   rowsPerPage = 10,
   noDataText = 'No hay datos disponibles',
-  columnHeaders
+  visibleColumns,
+  headerLabels = {},
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -32,10 +34,19 @@ const Table: React.FC<Props> = ({
     return data.slice(start, start + rowsPerPage);
   }, [currentPage, data, rowsPerPage]);
 
-  const headers = useMemo(() => {
+  // Determina las columnas base (todas) o las visibles si se pasó prop
+  const allHeaders = useMemo(() => {
     if (data.length === 0) return [];
     return Object.keys(data[0]);
   }, [data]);
+
+  const headers = useMemo(() => {
+    if (visibleColumns && visibleColumns.length > 0) {
+      // Filtra en el orden dado por visibleColumns, pero sólo las que existen en allHeaders
+      return visibleColumns.filter(col => allHeaders.includes(col));
+    }
+    return allHeaders;
+  }, [visibleColumns, allHeaders]);
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -51,9 +62,9 @@ const Table: React.FC<Props> = ({
         <StyledTable>
           <thead>
             <TableRow>
-              {headers.map((header, index) => (
+              {headers.map((header) => (
                 <TableHeader key={header}>
-                  {columnHeaders?.[index] ?? header.toUpperCase()}
+                  {headerLabels[header] ?? header.toUpperCase()}
                 </TableHeader>
               ))}
             </TableRow>

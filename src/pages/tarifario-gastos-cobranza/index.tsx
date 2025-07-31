@@ -1,10 +1,11 @@
 'use client';
 
-import { getParametrosGenerales } from "@/api/get-parametros-generales";
-import { postParametroGeneral } from "@/api/post-parametros-generales";
+import { getTarifasGenerales } from "@/api/get-tarifas-generales";
+import { postTarifaGeneral } from "@/api/post-tarifas-generales";
 import { deleteParametrosGenerales } from "@/api/delete-parametros-generales";
 import { updateParametroGeneral } from "@/api/update-parametros-generales";
 import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
 import ConfirmationModal from '@/components/modals/ConfirmationModal';
@@ -18,60 +19,73 @@ import FormSelect from '@/components/inputs/formSelect/FormSelect';
 import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
 
-function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
-  const { data, loading, error } = getParametrosGenerales(refreshKey);
+function ConsultaTarifas({ refreshKey }: { refreshKey: number }) {
+  const { data, loading, error } = getTarifasGenerales(refreshKey);
   const [filter, setFilter] = useState('');
 
   const rows = Array.isArray(data)
-  ? [...data].sort((a, b) => a.parametro.localeCompare(b.parametro))
+  ? [...data].sort((a, b) => a.codigoServicioFinanciero.localeCompare(b.codigoServicioFinanciero))
   : [];
 
   const filteredRows = rows.filter((param) =>
-    param.parametro.toLowerCase().includes(filter.toLowerCase())
+    param.codigoServicioFinanciero.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Consulta de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Consulta de Tarifas de Gastos de Cobranza</h2>
 
       {/* Filtro */}
       <form className={styles.filterContainer}>
         <FilteredInput
-          label="PARÁMETRO:"
+          label="SERVICIO FINANCIERO:"
           id="paramFilter"
           value={filter}
-          placeholder="Buscar parámetro..."
+          placeholder="Buscar servicio financiero..."
           onChange={(e) => setFilter(e.target.value)}
         />
         <div className={styles.exportButtonContainer}>
           <ExcelExport
             data={data}
-            fileName="parametros-gastos-cobranza.xlsx"
+            fileName="tarifas-gastos-cobranza.xlsx"
             label="Exportar Excel"
-            sortBy="parametro"
+            sortBy="codigoServicioFinanciero"
             direction="asc"
-            columnOrder={['parametro', 'valor']}
-            columnHeaders={{ parametro: 'parametro', valor: 'valor' }}
+            columnOrder={['codigoServicioFinanciero', 'diasVencidoDesde', 'diasVencidoHasta',
+            'montoVencidoDesde', 'montoVencidoHasta', 'tarifaSinIva']}
+            columnHeaders={{ codigoServicioFinanciero: 'codigoServicioFinanciero', diasVencidoDesde: 'diasVencidoDesde', 
+              diasVencidoHasta: 'diasVencidoHasta', montoVencidoDesde: 'montoVencidoDesde', montoVencidoHasta: 'montoVencidoHasta',
+              tarifaSinIva: 'tarifaSinIva'}}
           />
         </div>
       </form>
 
       {/* Tabla */}
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando tarifas..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
         <Table
           data={filteredRows}
-          visibleColumns={['parametro', 'valor']}
-          headerLabels={{ parametro: 'Nemónico', valor: 'Valor' }}
+          visibleColumns={['codigoServicioFinanciero', 'diasVencidoDesde', 'diasVencidoHasta',
+            'montoVencidoDesde', 'montoVencidoHasta', 'tarifaSinIva']}
+          headerLabels={{ codigoServicioFinanciero: 'Servicio Financiero', diasVencidoDesde: 'Dias Vencido Desde', 
+            diasVencidoHasta: 'Dias Vencido Hasta', montoVencidoDesde: 'Monto Vencido Desde', montoVencidoHasta: 'Monto Vencido Desde', tarifaSinIva: 'Tarifa Sin IVA'}}
         />
       )}
     </div>
   );
 }
 
-function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
-  const [formData, setFormData] = useState({ parametro: '', valor: '' });
+function IngresoTarifas({ onRefresh }: { onRefresh: () => void }) {
+  const [formData, setFormData] = useState({
+    codigoServicioFinanciero: '',
+    diasVencidoDesde: '',
+    diasVencidoHasta: '',
+    montoVencidoDesde: '',
+    montoVencidoHasta: '',
+    tarifaSinIva: '',
+  });
+
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -88,17 +102,29 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      await postParametroGeneral(formData.parametro, formData.valor);
+      const id = uuidv4(); // genera el UUID
+      // Llama con el UUID y el resto de los datos
+      await postTarifaGeneral(id, formData.codigoServicioFinanciero, formData.diasVencidoDesde, 
+        formData.diasVencidoHasta, formData.montoVencidoDesde, formData.montoVencidoHasta, 
+        formData.tarifaSinIva);
+
       Swal.fire({
-        title: "Parámetro correctamente ingresado!",
+        title: "Tarifa correctamente ingresada!",
         icon: "success",
         draggable: true
       });
-      setFormData({ parametro: '', valor: '' });
-      onRefresh()
+      setFormData({
+        codigoServicioFinanciero: '',
+        diasVencidoDesde: '',
+        diasVencidoHasta: '',
+        montoVencidoDesde: '',
+        montoVencidoHasta: '',
+        tarifaSinIva: '',
+      });
+      onRefresh();
     } catch (err) {
       Swal.fire({
-        title: "Error al ingresar parámetro!",
+        title: "Error al ingresar tarifa!",
         icon: "error",
         draggable: true
       });
@@ -110,14 +136,14 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Ingreso de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Ingreso de Tarifas de Gastos de Cobranza</h2>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
           <FormInput
-            label="PARÁMETRO:"
-            name="parametro"
-            value={formData.parametro}
-            placeholder="Ingrese nemónico del parámetro..."
+            label="SERVICIO FINANCIERO:"
+            name="codigoServicioFinanciero"
+            value={formData.codigoServicioFinanciero}
+            placeholder="Ingrese nemónico del servicio financiero..."
             onChange={handleChange}
             required
             autoComplete="off"
@@ -125,17 +151,61 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
         </div>
         <div className={styles.formGroup}>
           <FormInput
-            label="VALOR:"
-            name="valor"
-            value={formData.valor}
-            placeholder="Ingrese el valor del parámetro..."
+            label="DIAS VENCIDO DESDE:"
+            name="diasVencidoDesde"
+            value={formData.diasVencidoDesde}
+            placeholder="Ingrese dias vencido desde..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="DIAS VENCIDO HASTA:"
+            name="diasVencidoHasta"
+            value={formData.diasVencidoHasta}
+            placeholder="Ingrese dias vencido hasta..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="MONTO VENCIDO DESDE:"
+            name="montoVencidoDesde"
+            value={formData.montoVencidoDesde}
+            placeholder="Ingrese monto vencido desde..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="MONTO VENCIDO HASTA:"
+            name="montoVencidoHasta"
+            value={formData.montoVencidoHasta}
+            placeholder="Ingrese monto vencido hasta..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="TARIFA SIN IVA:"
+            name="tarifaSinIva"
+            value={formData.tarifaSinIva}
+            placeholder="Ingrese tarifa sin IVA..."
             onChange={handleChange}
             required
             autoComplete="off"
           />
         </div>
         <div className={styles.buttonContainer}>
-          <RegisterButton type="submit">Ingresar Parámetro</RegisterButton>
+          <RegisterButton type="submit">Ingresar Tarifa</RegisterButton>
         </div>
       </form>
 
@@ -143,8 +213,13 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar ingreso"
-        message={`¿Deseas ingresar el parámetro "${formData.parametro}" con el valor "${formData.valor}"?`}
         confirmText="Sí, ingresar"
+        message={`¿Deseas ingresar el servicio financiero "${formData.codigoServicioFinanciero}" con los siguientes valores:\n
+          Dias Vencido Desde: "${formData.diasVencidoDesde}"\n
+          Dias Vencido Hasta: "${formData.diasVencidoHasta}"\n
+          Monto Vencido Desde: "${formData.montoVencidoDesde}"\n
+          Monto Vencido Hasta: "${formData.montoVencidoHasta}"\n
+          Tarifa Sin IVA: "${formData.tarifaSinIva}"?`}
         cancelText="Cancelar"
         onConfirm={handleConfirm}
         onCancel={() => setShowModal(false)}
@@ -155,8 +230,15 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
 }
 
 function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
-  const { data, loading: loadingData, error } = getParametrosGenerales(refreshKey);
-  const [formData, setFormData] = useState({ parametro: '', valor: '' });
+  const { data, loading: loadingData, error } = getTarifasGenerales(refreshKey);
+  const [formData, setFormData] = useState({
+    codigoServicioFinanciero: '',
+    diasVencidoDesde: '',
+    diasVencidoHasta: '',
+    montoVencidoDesde: '',
+    montoVencidoHasta: '',
+    tarifaSinIva: '',
+  });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -173,20 +255,27 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await deleteParametrosGenerales(formData.parametro);
+      await deleteParametrosGenerales(formData.codigoServicioFinanciero);
 
       Swal.fire({
-        title: "Parámetro eliminado correctamente",
+        title: "Tarifa eliminada correctamente",
         icon: "success",
         timer: 2000,
         timerProgressBar: true,
       });
 
-      setFormData({ parametro: '', valor: '' });
+      setFormData({
+        codigoServicioFinanciero: '',
+        diasVencidoDesde: '',
+        diasVencidoHasta: '',
+        montoVencidoDesde: '',
+        montoVencidoHasta: '',
+        tarifaSinIva: '',
+      });
       onRefresh()
     } catch (err) {
       Swal.fire({
-        title: "Error al eliminar el parámetro",
+        title: "Error al eliminar la tarifa",
         icon: "error",
         text: (err as Error).message || "",
       });
@@ -197,42 +286,47 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
   };
 
   // Preparar opciones para el combo
-  const parametroOptions = Array.isArray(data)
+  const servicioOptions = Array.isArray(data)
     ? [...data]
-        .sort((a, b) => a.parametro.localeCompare(b.parametro))
+        .sort((a, b) => a.codigoServicioFinanciero.localeCompare(b.codigoServicioFinanciero))
         .map((param: any) => ({
-          value: param.parametro,
-          label: param.parametro,
+          value: param.codigoServicioFinanciero,
+          label: param.codigoServicioFinanciero,
         }))
     : [];
 
-  const selectedParametro = Array.isArray(data)
-  ? data.find((p) => p.parametro === formData.parametro)
+  const selectedServicio = Array.isArray(data)
+  ? data.find((p) => p.codigoServicioFinanciero === formData.codigoServicioFinanciero)
   : null;
 
-const valorActual = selectedParametro?.valor ?? "";
+const valorActual = {diasVencidoDesde: selectedServicio?.diasVencidoDesde ?? "",
+                     diasVencidoHasta: selectedServicio?.diasVencidoHasta ?? "",
+                     montoVencidoDesde: selectedServicio?.montoVencidoDesde ?? "",
+                     montoVencidoHasta: selectedServicio?.montoVencidoHasta ?? "",
+                     tarifaSinIva: selectedServicio?.tarifaSinIva ?? "",
+};
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Eliminación de Tarifas Generales</h2>
 
-      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
+      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando Tarifas..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="PARÁMETRO:"
-              name="parametro"
-              value={formData.parametro}
-              options={parametroOptions}
+              label="SERVICIO FINANCIERO:"
+              name="codigoServicioFinanciero"
+              value={formData.codigoServicioFinanciero}
+              options={servicioOptions}
               onChange={handleChange}
               required
             />
           </div>
           <div className={styles.buttonContainer}>
-            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Parámetro</DeleteButton>
+            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Tarifa</DeleteButton>
           </div>
         </form>
       )}
@@ -240,7 +334,12 @@ const valorActual = selectedParametro?.valor ?? "";
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar el parámetro "${formData.parametro}" con el valor "${valorActual}"?`}
+        message={`¿Deseas eliminar el servicio financiero "${formData.codigoServicioFinanciero}" con los siguientes valores:\n
+          Dias Vencido Desde: "${valorActual.diasVencidoDesde}"\n
+          Dias Vencido Hasta: "${valorActual.diasVencidoHasta}"\n
+          Monto Vencido Desde: "${valorActual.montoVencidoDesde}"\n
+          Monto Vencido Hasta: "${valorActual.montoVencidoHasta}"\n
+          Tarifa Sin IVA: "${valorActual.tarifaSinIva}"?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
@@ -253,7 +352,7 @@ const valorActual = selectedParametro?.valor ?? "";
 
 
 function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number; onRefresh: () => void }) {
-  const { data: parametros, loading, error } = getParametrosGenerales(refreshKey);
+  const { data: servicios, loading, error } = getParametrosGenerales(refreshKey);
   const [formData, setFormData] = useState({ parametro: "", valor: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -271,7 +370,7 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
       return;
     }
 
-    const existe = parametros.some((p) => p.parametro === formData.parametro);
+    const existe = servicios.some((p) => p.parametro === formData.parametro);
 
     if (!existe) {
       Swal.fire("Parámetro no encontrado", `El parámetro "${formData.parametro}" no existe.`, "error");
@@ -282,9 +381,9 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
   };
 
   // Preparar opciones para el select
-  const parametroOptions = Array.isArray(parametros)
-    ? [...parametros]
-        .sort((a, b) => a.parametro.localeCompare(b.parametro))
+  const servicioOptions = Array.isArray(servicios)
+    ? [...servicios]
+        .sort((a, b) => a.codigoServicioFinanciero.localeCompare(b.codigoServicioFinanciero))
         .map((param: any) => ({
           value: param.parametro,
           label: param.parametro,
@@ -381,13 +480,13 @@ export default function ParametrosGenerales() {
 
   return (
     <div className={styles.pageContainer}>
-      <h1 className={styles.pageTitle}>Parámetros Generales de Gastos de Cobranza</h1>
+      <h1 className={styles.pageTitle}>Tarifario General de Gastos de Cobranza</h1>
       <div className={styles.tabsContainer}>
         <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {activeTab === 'Consulta' && <ConsultaParametros refreshKey={refreshKey} />}
-      {activeTab === 'Ingreso' && <IngresoParametros onRefresh={() => setRefreshKey(prev => prev + 1)} />}
+      {activeTab === 'Consulta' && <ConsultaTarifas refreshKey={refreshKey} />}
+      {activeTab === 'Ingreso' && <IngresoTarifas onRefresh={() => setRefreshKey(prev => prev + 1)} />}
       {activeTab === 'Eliminación' && <EliminacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
       {activeTab === 'Actualización' && (<ActualizacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
 )}

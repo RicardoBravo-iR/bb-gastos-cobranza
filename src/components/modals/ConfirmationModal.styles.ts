@@ -36,6 +36,7 @@ export const ModalBody = styled.p`
   margin-bottom: 1.5rem;
   font-size: 1rem;
   color: #333;
+  white-space: pre-line;
 `;
 
 export const ModalActions = styled.div`
