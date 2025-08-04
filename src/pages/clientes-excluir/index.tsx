@@ -285,31 +285,31 @@ function EliminacionClientesAExcluir({
   );
 }
 
-function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
+function ActualizacionClientesAExcluir({
+  refreshKey,
+  onRefresh,
+}: {
   refreshKey: number;
   onRefresh: () => void;
 }) {
   const { data: clientes, loading, error } = getClientesAExcluir(refreshKey);
   const [formData, setFormData] = useState({
-    identificacion: '',
-    identificacionCliente: '',
-    fechaVigenciaHasta: ''
+    identificacion: "",
+    identificacionCliente: "",
+    fechaVigenciaHasta: "",
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState<ClienteAExcluir | null>(null);
 
-  // Servicio seleccionado en base al código seleccionado
-  const selectedCliente = Array.isArray(clientes)
-    ? clientes.find((p) => p.identificacion === formData.identificacion)
-    : null;
-
+  // Valores actuales para mostrar en el modal
   const valorActual = {
-    identificacion: selectedCliente?.identificacion ?? '',
-    fechaVigenciaHasta: selectedCliente?.fechaVigenciaHasta ?? '',
+    identificacion: selectedCliente?.identificacion ?? "",
+    fechaVigenciaHasta: selectedCliente?.fechaVigenciaHasta ?? "",
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -317,19 +317,16 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.identificacion ||
-      !formData.fechaVigenciaHasta
-    ) {
-      Swal.fire('Campos requeridos', 'Debes completar todos campos.', 'warning');
+    if (!formData.identificacion || !formData.fechaVigenciaHasta) {
+      Swal.fire("Campos requeridos", "Debes completar todos campos.", "warning");
       return;
     }
 
     if (!selectedCliente) {
       Swal.fire(
-        'Cliente no encontrado',
+        "Cliente no encontrado",
         `El cliente con identificación "${formData.identificacion}" no existe.`,
-        'error'
+        "error"
       );
       return;
     }
@@ -337,19 +334,9 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
     setShowModal(true);
   };
 
-  // Opciones para el select de servicio financiero
-  const clienteOptions = Array.isArray(clientes)
-    ? [...clientes]
-        .sort((a, b) => a.identificacion.localeCompare(b.identificacion))
-        .map((param: any) => ({
-          value: param.identificacion,
-          label: param.identificacion,
-        }))
-    : [];
-
   const handleConfirmUpdate = async () => {
     if (!selectedCliente) {
-      Swal.fire('Error', 'No hay cliente seleccionado válido.', 'error');
+      Swal.fire("Error", "No hay cliente seleccionado válido.", "error");
       setShowModal(false);
       return;
     }
@@ -357,30 +344,28 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
     setShowModal(false);
     setSubmitting(true);
 
-    // Construir payload de actualización (solo campos editables)
-    const updates = {
-      identificacionCliente: formData.identificacionCliente, // si aplica en tu API
-      fechaVigenciaHasta: formData.fechaVigenciaHasta,
-    };
-
     try {
-      // Se asume que updateTarifaGeneral acepta (tarifa_id, updates)
-      await updateClienteAExcluir({cliente_id: selectedCliente.cliente_id, 
+      await updateClienteAExcluir({
+        cliente_id: selectedCliente.cliente_id,
+        identificacion: formData.identificacionCliente,
         fechaVigenciaHasta: formData.fechaVigenciaHasta,
-        identificacion: formData.identificacionCliente});
-      Swal.fire(
-        'Actualización exitosa',
-        `El cliente con identificación "${formData.identificacion}" fue actualizado.`,
-        'success'
-      );
-      setFormData({
-        identificacion: '',
-        identificacionCliente: '',
-        fechaVigenciaHasta: ''
       });
+
+      Swal.fire(
+        "Actualización exitosa",
+        `El cliente con identificación "${formData.identificacion}" fue actualizado.`,
+        "success"
+      );
+
+      setFormData({
+        identificacion: "",
+        identificacionCliente: "",
+        fechaVigenciaHasta: "",
+      });
+      setSelectedCliente(null);
       onRefresh();
     } catch (err: any) {
-      Swal.fire('Error', err.message || 'Ocurrió un error al actualizar.', 'error');
+      Swal.fire("Error", err.message || "Ocurrió un error al actualizar.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -388,26 +373,38 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Actualización de Clientes a excluir en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>
+        Actualización de Clientes a excluir en Gastos de Cobranza
+      </h2>
 
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && (
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />
+      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loading && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
-            <FormSelect
+            <FilteredSearchInput
               label="IDENTIFICACION:"
-              name="identificacion"
-              value={formData.identificacion}
-              options={clienteOptions}
-              onChange={handleChange}
-              required
+              placeholder="Busca por identificación..."
+              refreshKey={refreshKey}
+              filterBy="identificacion"
+              onSelect={(cliente) => {
+                setSelectedCliente(cliente);
+                setFormData((prev) => ({
+                  ...prev,
+                  identificacion: cliente.identificacion,
+                  fechaVigenciaHasta: cliente.fechaVigenciaHasta,
+                }));
+              }}
+              minCharsToSearch={1}
             />
           </div>
+
           <div className={styles.formGroup}>
             <FormInput
-              label="IDENTIFICACION:"
+              label="NUEVA IDENTIFICACION:"
               name="identificacionCliente"
               value={formData.identificacionCliente}
               placeholder="Ingrese el nuevo valor de identificación del cliente..."
@@ -416,6 +413,7 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
               autoComplete="off"
             />
           </div>
+
           <div className={styles.formGroup}>
             <FormInput
               label="FECHA VIGENCIA HASTA:"
@@ -427,9 +425,10 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
               autoComplete="off"
             />
           </div>
+
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
-              {submitting ? 'Actualizando...' : 'Actualizar Cliente'}
+              {submitting ? "Actualizando..." : "Actualizar Cliente"}
             </RegisterButton>
           </div>
         </form>
@@ -438,12 +437,7 @@ function ActualizacionClientesAExcluir({refreshKey, onRefresh,}: {
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar actualización"
-        message={`¿Deseas actualizar al cliente con identificacion "${formData.identificacion}" con valores actuales: 
-          Identificación: "${valorActual.identificacion}"\n, 
-          Fecha Vigencia Hasta: "${valorActual.fechaVigenciaHasta}"\n
-          a los nuevos valores:\n
-          Identificación: "${formData.identificacionCliente}\n
-          Fecha Vigencia Hasta: "${formData.fechaVigenciaHasta}"?`}
+        message={`¿Deseas actualizar al cliente con identificación "${valorActual.identificacion}" con valores actuales:\nIdentificación: "${valorActual.identificacion}",\nFecha Vigencia Hasta: "${valorActual.fechaVigenciaHasta}"\na los nuevos valores:\nIdentificación: "${formData.identificacionCliente}",\nFecha Vigencia Hasta: "${formData.fechaVigenciaHasta}"?`}
         confirmText="Sí, actualizar"
         cancelText="Cancelar"
         onConfirm={handleConfirmUpdate}

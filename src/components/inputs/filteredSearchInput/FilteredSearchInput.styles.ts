@@ -4,17 +4,14 @@ import styled from 'styled-components';
 export const Wrapper = styled.div`
   position: relative;
   width: 100%;
-  max-width: 600px;
 `;
 
 export const InputGroup = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  margin-top: 2rem;
   gap: 1rem;
-  min-width: 75%;
+  margin-bottom: 1.5rem;
 `;
 
 export const Label = styled.label`
