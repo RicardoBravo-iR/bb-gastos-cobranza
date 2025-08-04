@@ -315,7 +315,7 @@ const handleConfirmDelete = async () => {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Eliminación de Tarifas Generales</h2>
+      <h2 className={styles.operationTitle}>Eliminación de Tarifas de Gastos de Cobranza</h2>
 
       {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando Tarifas..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -484,7 +484,7 @@ function ActualizacionTarifas({refreshKey, onRefresh,}: {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Actualización de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Actualización de Tarifas de Gastos de Cobranza</h2>
 
       {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}

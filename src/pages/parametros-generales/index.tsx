@@ -32,7 +32,7 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Consulta de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Consulta de Parámetros Generales de Gastos de Cobranza</h2>
 
       {/* Filtro */}
       <form className={styles.filterContainer}>
@@ -110,7 +110,7 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Ingreso de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Ingreso de Parámetros Generales de Gastos de Cobranza</h2>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
           <FormInput
@@ -214,7 +214,7 @@ const valorActual = selectedParametro?.valor ?? "";
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Eliminación de Parámetros Generales de Gastos de Cobranza</h2>
 
       {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -314,7 +314,7 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Actualización de Parámetros Generales</h2>
+      <h2 className={styles.operationTitle}>Actualización de Parámetros Generales de Gastos de Cobranza</h2>
 
       {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
