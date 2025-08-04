@@ -2,7 +2,7 @@
 
 import { getParametrosGenerales } from "@/api/get-parametros-generales";
 import { postParametroGeneral } from "@/api/post-parametros-generales";
-import { deleteParametrosGenerales } from "@/api/delete-parametros-generales";
+import { deleteParametroGeneral } from "@/api/delete-parametros-generales";
 import { updateParametroGeneral } from "@/api/update-parametros-generales";
 import React, { useState, useEffect } from 'react';
 import Tabs from '@/components/tabs/Tabs';
@@ -173,7 +173,7 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await deleteParametrosGenerales(formData.parametro);
+      await deleteParametroGeneral(formData.parametro);
 
       Swal.fire({
         title: "Parámetro eliminado correctamente",

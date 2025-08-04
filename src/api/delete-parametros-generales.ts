@@ -1,7 +1,7 @@
 import { API_SAC } from "@/config";
 import { getCognitoToken } from "@/api/auth-cognito";
 
-export async function deleteParametrosGenerales(parametro: string): Promise<void> {
+export async function deleteParametroGeneral(parametro: string): Promise<void> {
   try {
     const token = await getCognitoToken();
     const url = `${API_SAC}cobranzas/parameterCharge/delete`;

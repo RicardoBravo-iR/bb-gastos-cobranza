@@ -2,8 +2,8 @@
 
 import { getTarifasGenerales } from "@/api/get-tarifas-generales";
 import { postTarifaGeneral } from "@/api/post-tarifas-generales";
-import { deleteParametrosGenerales } from "@/api/delete-parametros-generales";
-import { updateParametroGeneral } from "@/api/update-parametros-generales";
+import { deleteTarifaGeneral } from "@/api/delete-tarifas-generales";
+import { updateTarifaGeneral } from "@/api/update-tarifas-generales";
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Tabs from '@/components/tabs/Tabs';
@@ -229,7 +229,7 @@ function IngresoTarifas({ onRefresh }: { onRefresh: () => void }) {
   );
 }
 
-function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
+function EliminacionTarifas({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
   const { data, loading: loadingData, error } = getTarifasGenerales(refreshKey);
   const [formData, setFormData] = useState({
     codigoServicioFinanciero: '',
@@ -252,38 +252,45 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
     setShowModal(true);
   };
 
-  const handleConfirmDelete = async () => {
-    setLoading(true);
-    try {
-      await deleteParametrosGenerales(formData.codigoServicioFinanciero);
+const handleConfirmDelete = async () => {
+  if (!selectedServicio) {
+    Swal.fire("Error", "No se encontró la tarifa seleccionada.", "error");
+    setShowModal(false);
+    return;
+  }
 
-      Swal.fire({
-        title: "Tarifa eliminada correctamente",
-        icon: "success",
-        timer: 2000,
-        timerProgressBar: true,
-      });
+  setLoading(true);
+  try {
+    await deleteTarifaGeneral(selectedServicio.tarifa_id); // solo el id
 
-      setFormData({
-        codigoServicioFinanciero: '',
-        diasVencidoDesde: '',
-        diasVencidoHasta: '',
-        montoVencidoDesde: '',
-        montoVencidoHasta: '',
-        tarifaSinIva: '',
-      });
-      onRefresh()
-    } catch (err) {
-      Swal.fire({
-        title: "Error al eliminar la tarifa",
-        icon: "error",
-        text: (err as Error).message || "",
-      });
-    } finally {
-      setLoading(false);
-      setShowModal(false);
-    }
-  };
+    Swal.fire({
+      title: "Tarifa eliminada correctamente",
+      icon: "success",
+      timer: 2000,
+      timerProgressBar: true,
+    });
+
+    setFormData({
+      codigoServicioFinanciero: '',
+      diasVencidoDesde: '',
+      diasVencidoHasta: '',
+      montoVencidoDesde: '',
+      montoVencidoHasta: '',
+      tarifaSinIva: '',
+    });
+    onRefresh();
+  } catch (err) {
+    Swal.fire({
+      title: "Error al eliminar la tarifa",
+      icon: "error",
+      text: (err as Error).message || "",
+    });
+  } finally {
+    setLoading(false);
+    setShowModal(false);
+  }
+};
+
 
   // Preparar opciones para el combo
   const servicioOptions = Array.isArray(data)
@@ -299,12 +306,12 @@ function EliminacionParametros({ refreshKey, onRefresh }: { refreshKey: number, 
   ? data.find((p) => p.codigoServicioFinanciero === formData.codigoServicioFinanciero)
   : null;
 
-const valorActual = {diasVencidoDesde: selectedServicio?.diasVencidoDesde ?? "",
-                     diasVencidoHasta: selectedServicio?.diasVencidoHasta ?? "",
-                     montoVencidoDesde: selectedServicio?.montoVencidoDesde ?? "",
-                     montoVencidoHasta: selectedServicio?.montoVencidoHasta ?? "",
-                     tarifaSinIva: selectedServicio?.tarifaSinIva ?? "",
-};
+  const valorActual = {diasVencidoDesde: selectedServicio?.diasVencidoDesde ?? "",
+                      diasVencidoHasta: selectedServicio?.diasVencidoHasta ?? "",
+                      montoVencidoDesde: selectedServicio?.montoVencidoDesde ?? "",
+                      montoVencidoHasta: selectedServicio?.montoVencidoHasta ?? "",
+                      tarifaSinIva: selectedServicio?.tarifaSinIva ?? "",
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -351,11 +358,36 @@ const valorActual = {diasVencidoDesde: selectedServicio?.diasVencidoDesde ?? "",
 }
 
 
-function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number; onRefresh: () => void }) {
-  const { data: servicios, loading, error } = getParametrosGenerales(refreshKey);
-  const [formData, setFormData] = useState({ parametro: "", valor: "" });
+function ActualizacionTarifas({refreshKey, onRefresh,}: {
+  refreshKey: number;
+  onRefresh: () => void;
+}) {
+  const { data: servicios, loading, error } = getTarifasGenerales(refreshKey);
+  const [formData, setFormData] = useState({
+    codigoServicioFinanciero: '',
+    servicioFinanciero: '',
+    diasVencidoDesde: '',
+    diasVencidoHasta: '',
+    montoVencidoDesde: '',
+    montoVencidoHasta: '',
+    tarifaSinIva: '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  // Servicio seleccionado en base al código seleccionado
+  const selectedServicio = Array.isArray(servicios)
+    ? servicios.find((p) => p.codigoServicioFinanciero === formData.codigoServicioFinanciero)
+    : null;
+
+  const valorActual = {
+    codigoServicioFinanciero: selectedServicio?.codigoServicioFinanciero ?? '',
+    diasVencidoDesde: selectedServicio?.diasVencidoDesde ?? '',
+    diasVencidoHasta: selectedServicio?.diasVencidoHasta ?? '',
+    montoVencidoDesde: selectedServicio?.montoVencidoDesde ?? '',
+    montoVencidoHasta: selectedServicio?.montoVencidoHasta ?? '',
+    tarifaSinIva: selectedServicio?.tarifaSinIva ?? '',
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -365,77 +397,171 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.parametro || !formData.valor) {
-      Swal.fire("Campos requeridos", "Debes completar ambos campos.", "warning");
+    if (
+      !formData.codigoServicioFinanciero ||
+      !formData.diasVencidoDesde ||
+      !formData.diasVencidoHasta ||
+      !formData.montoVencidoDesde ||
+      !formData.montoVencidoHasta ||
+      !formData.tarifaSinIva
+    ) {
+      Swal.fire('Campos requeridos', 'Debes completar todos campos.', 'warning');
       return;
     }
 
-    const existe = servicios.some((p) => p.parametro === formData.parametro);
-
-    if (!existe) {
-      Swal.fire("Parámetro no encontrado", `El parámetro "${formData.parametro}" no existe.`, "error");
+    if (!selectedServicio) {
+      Swal.fire(
+        'Tarifa no encontrada',
+        `La tarifa "${formData.codigoServicioFinanciero}" no existe.`,
+        'error'
+      );
       return;
     }
 
     setShowModal(true);
   };
 
-  // Preparar opciones para el select
+  // Opciones para el select de servicio financiero
   const servicioOptions = Array.isArray(servicios)
     ? [...servicios]
         .sort((a, b) => a.codigoServicioFinanciero.localeCompare(b.codigoServicioFinanciero))
         .map((param: any) => ({
-          value: param.parametro,
-          label: param.parametro,
+          value: param.codigoServicioFinanciero,
+          label: param.codigoServicioFinanciero,
         }))
     : [];
 
   const handleConfirmUpdate = async () => {
+    if (!selectedServicio) {
+      Swal.fire('Error', 'No hay servicio seleccionado válido.', 'error');
+      setShowModal(false);
+      return;
+    }
+
     setShowModal(false);
     setSubmitting(true);
+
+    // Construir payload de actualización (solo campos editables)
+    const updates = {
+      servicioFinanciero: formData.servicioFinanciero, // si aplica en tu API
+      diasVencidoDesde: formData.diasVencidoDesde,
+      diasVencidoHasta: formData.diasVencidoHasta,
+      montoVencidoDesde: formData.montoVencidoDesde,
+      montoVencidoHasta: formData.montoVencidoHasta,
+      tarifaSinIva: formData.tarifaSinIva,
+    };
+
     try {
-      await updateParametroGeneral(formData.parametro, formData.valor);
-      Swal.fire("Actualización exitosa", `El parámetro "${formData.parametro}" fue actualizado.`, "success");
-      setFormData({ parametro: "", valor: "" });
+      // Se asume que updateTarifaGeneral acepta (tarifa_id, updates)
+      await updateTarifaGeneral({tarifa_id: selectedServicio.tarifa_id, 
+        codigoServicioFinanciero: formData.servicioFinanciero,
+        diasVencidoDesde: formData.diasVencidoDesde,
+        diasVencidoHasta: formData.diasVencidoHasta,
+        montoVencidoDesde: formData.montoVencidoDesde,
+        montoVencidoHasta: formData.montoVencidoHasta,
+        tarifaSinIva: formData.tarifaSinIva});
+      Swal.fire(
+        'Actualización exitosa',
+        `El Servicio Financiero "${formData.codigoServicioFinanciero}" fue actualizado.`,
+        'success'
+      );
+      setFormData({
+        codigoServicioFinanciero: '',
+        servicioFinanciero: '',
+        diasVencidoDesde: '',
+        diasVencidoHasta: '',
+        montoVencidoDesde: '',
+        montoVencidoHasta: '',
+        tarifaSinIva: '',
+      });
       onRefresh();
     } catch (err: any) {
-      Swal.fire("Error", err.message || "Ocurrió un error al actualizar.", "error");
+      Swal.fire('Error', err.message || 'Ocurrió un error al actualizar.', 'error');
     } finally {
       setSubmitting(false);
     }
   };
-
-  const selectedParametro = Array.isArray(parametros)
-  ? parametros.find((p) => p.parametro === formData.parametro)
-  : null;
-
-  const valorActual = selectedParametro?.valor ?? "";
 
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>Actualización de Parámetros Generales</h2>
 
       {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {!loading && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="PARÁMETRO:"
-              name="parametro"
-              value={formData.parametro}
-              options={parametroOptions}
+              label="SERVICIO FINANCIERO:"
+              name="codigoServicioFinanciero"
+              value={formData.codigoServicioFinanciero}
+              options={servicioOptions}
               onChange={handleChange}
               required
             />
           </div>
           <div className={styles.formGroup}>
             <FormInput
-              label="VALOR:"
-              name="valor"
-              value={formData.valor}
-              placeholder="Ingrese el nuevo valor..."
+              label="SERVICIO FINANCIERO:"
+              name="servicioFinanciero"
+              value={formData.servicioFinanciero}
+              placeholder="Ingrese el nuevo valor del Servicio Financiero..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="DIAS VENCIDO DESDE:"
+              name="diasVencidoDesde"
+              value={formData.diasVencidoDesde}
+              placeholder="Ingrese el nuevo valor de Dias Vencido Desde..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="DIAS VENCIDO HASTA:"
+              name="diasVencidoHasta"
+              value={formData.diasVencidoHasta}
+              placeholder="Ingrese el nuevo valor de Dias Vencido Hasta..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="MONTO VENCIDO DESDE:"
+              name="montoVencidoDesde"
+              value={formData.montoVencidoDesde}
+              placeholder="Ingrese el nuevo valor de Monto Vencido Desde..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="MONTO VENCIDO HASTA:"
+              name="montoVencidoHasta"
+              value={formData.montoVencidoHasta}
+              placeholder="Ingrese el nuevo valor de Monto Vencido Hasta..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="TARIFA SIN IVA:"
+              name="tarifaSinIva"
+              value={formData.tarifaSinIva}
+              placeholder="Ingrese el nuevo valor de Tarifa sin IVA..."
               onChange={handleChange}
               required
               autoComplete="off"
@@ -443,7 +569,7 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
           </div>
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
-              {submitting ? "Actualizando..." : "Actualizar Parámetro"}
+              {submitting ? 'Actualizando...' : 'Actualizar Parámetro'}
             </RegisterButton>
           </div>
         </form>
@@ -452,7 +578,13 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar actualización"
-        message={`¿Deseas actualizar el parámetro "${formData.parametro}" con el valor "${valorActual}", al nuevo valor "${formData.valor}"?`}
+        message={`¿Deseas actualizar el Servicio Financiero "${formData.codigoServicioFinanciero}" con los valores actuales: 
+          Dias Vencido Desde: "${valorActual.diasVencidoDesde}", 
+          Dias Vencido Hasta: "${valorActual.diasVencidoHasta}", 
+          Monto Vencido Desde: "${valorActual.montoVencidoDesde}", 
+          Monto Vencido Hasta: "${valorActual.montoVencidoHasta}", 
+          Tarifa Sin IVA: "${valorActual.tarifaSinIva}" 
+          al nuevo valor proporcionado?`}
         confirmText="Sí, actualizar"
         cancelText="Cancelar"
         onConfirm={handleConfirmUpdate}
@@ -463,7 +595,7 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
   );
 }
 
-export default function ParametrosGenerales() {
+export default function TarifasGenerales() {
   const [activeTab, setActiveTab] = useState('Consulta');
   const [isClient, setIsClient] = useState(false);
   const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Actualización'];
@@ -487,8 +619,8 @@ export default function ParametrosGenerales() {
 
       {activeTab === 'Consulta' && <ConsultaTarifas refreshKey={refreshKey} />}
       {activeTab === 'Ingreso' && <IngresoTarifas onRefresh={() => setRefreshKey(prev => prev + 1)} />}
-      {activeTab === 'Eliminación' && <EliminacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
-      {activeTab === 'Actualización' && (<ActualizacionParametros refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
+      {activeTab === 'Eliminación' && <EliminacionTarifas refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
+      {activeTab === 'Actualización' && (<ActualizacionTarifas refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
 )}
     </div>
   );

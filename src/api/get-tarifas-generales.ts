@@ -4,6 +4,7 @@ import { API_SAC } from "@/config";
 import { getCognitoToken } from "@/api/auth-cognito";
 
 export interface TarifaGeneral {
+  tarifa_id: string;
   codigoServicioFinanciero: string;
   diasVencidoDesde: number;
   diasVencidoHasta: number;
