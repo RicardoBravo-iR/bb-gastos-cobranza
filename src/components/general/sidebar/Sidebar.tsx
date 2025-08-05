@@ -45,6 +45,11 @@ export default function Sidebar() {
 							<span>Estatus de Cuenta a excluir en Gastos de Cobranza</span>
 						</Link>
 					</li>
+					<li className={optionNav}>
+						<Link href="/logs-gastos-cobranza" className={optionLink}>
+							<span>Logs de Auditoría de Gastos de Cobranza</span>
+						</Link>
+					</li>
 				</ul>
 
 				<div className={logoutContainer}>
