@@ -36,7 +36,7 @@ export default function Sidebar() {
 						</Link>
 					</li>
 					<li className={optionNav}>
-						<Link href="/option-4" className={optionLink}>
+						<Link href="/bines-excluir" className={optionLink}>
 							<span>Bines a excluir en Gastos de Cobranza</span>
 						</Link>
 					</li>

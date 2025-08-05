@@ -15,7 +15,6 @@ import FormInput from '@/components/inputs/formInput/FormInput';
 import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
-import FormSelect from '@/components/inputs/formSelect/FormSelect';
 import FilteredSearchInput from "@/components/inputs/filteredSearchInput/FilteredSearchInput";
 import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
