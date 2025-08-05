@@ -1,9 +1,9 @@
 'use client';
 
-import { getBinesExcluir } from "@/api/get-bines-excluir";
-import { postBinAExcluir } from "@/api/post-bines-excluir";
-import { deleteBinAExcluir } from "@/api/delete-bines-excluir";
-import { updateBinAExcluir } from "@/api/update-bines-excluir";
+import { getEstatusCuentaExcluir } from "@/api/get-estatus-cuenta-excluir";
+import { postEstatusCuentaAExcluir } from "@/api/post-estatus-cuenta-excluir";
+import { deleteEstatusCuentaAExcluir } from "@/api/delete-estatus-cuenta-excluir";
+import { updateEstatusCuentaAExcluir } from "@/api/update-estatus-cuenta-excluir";
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Tabs from '@/components/tabs/Tabs';
@@ -19,61 +19,62 @@ import FormSelect from '@/components/inputs/formSelect/FormSelect';
 import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
 
-function ConsultaBinesAExcluir({ refreshKey }: { refreshKey: number }) {
-  const { data, loading, error } = getBinesExcluir(refreshKey);
+function ConsultaEstatusCuentaAExcluir({ refreshKey }: { refreshKey: number }) {
+  const { data, loading, error } = getEstatusCuentaExcluir(refreshKey);
   const [filter, setFilter] = useState('');
 
 const rows = Array.isArray(data)
-  ? [...data].sort((a, b) => a.bin.localeCompare(b.bin))
+  ? [...data].sort((a, b) => a.estatusCta.localeCompare(b.estatusCta))
   : [];
 
   const filteredRows = rows.filter((param) =>
-    param.bin.toLowerCase().includes(filter.toLowerCase())
+        param.estatusCta.toLowerCase().includes(filter.toLowerCase())
+
   );
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Consulta de Bines a excluir en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>Consulta de Estatus de Cuenta a excluir en Gastos de Cobranza</h2>
 
       {/* Filtro */}
       <form className={styles.filterContainer}>
         <FilteredInput
-          label="BIN:"
+          label="ESTATUS DE CUENTA:"
           id="paramFilter"
           value={filter}
-          placeholder="Buscar bin..."
+          placeholder="Buscar estatus de cuenta..."
           onChange={(e) => setFilter(e.target.value)}
         />
         <div className={styles.exportButtonContainer}>
           <ExcelExport
             data={data}
-            fileName="bines-excluir.xlsx"
+            fileName="estatus-cuenta-excluir.xlsx"
             label="Exportar Excel"
-            sortBy="bin"
+            sortBy="estatusCta"
             direction="asc"
-            columnOrder={['bin']}
-            columnHeaders={{ bin: 'Bin'}}
+            columnOrder={['estatusCta']}
+            columnHeaders={{ estatusCta: 'Estatus de Cuenta'}}
           />
         </div>
       </form>
 
       {/* Tabla */}
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando bines a excluir..." />}
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta a excluir..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && (
         <Table
           data={filteredRows}
-          visibleColumns={['bin']}
-          headerLabels={{ bin: 'Bin'}}
+          visibleColumns={['estatusCta']}
+          headerLabels={{ estatusCta: 'Estatus de Cuenta'}}
         />
       )}
     </div>
   );
 }
 
-function IngresoBinesAExcluir({ onRefresh }: { onRefresh: () => void }) {
+function IngresoEstatusCuentaAExcluir({ onRefresh }: { onRefresh: () => void }) {
   const [formData, setFormData] = useState({
-    bin: '',
+    estatusCta: '',
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -94,20 +95,20 @@ function IngresoBinesAExcluir({ onRefresh }: { onRefresh: () => void }) {
     try {
       const id = uuidv4(); // genera el UUID
       // Llama con el UUID y el resto de los datos
-      await postBinAExcluir(id, formData.bin);
+      await postEstatusCuentaAExcluir(id, formData.estatusCta);
 
       Swal.fire({
-        title: "Bin correctamente ingresado!",
+        title: "Estatus de Cuenta correctamente ingresado!",
         icon: "success",
         draggable: true
       });
       setFormData({
-        bin: '',
+        estatusCta: '',
       });
       onRefresh();
     } catch (err) {
       Swal.fire({
-        title: "Error al ingresar bin!",
+        title: "Error al ingresar estatus de cuenta!",
         icon: "error",
         draggable: true
       });
@@ -119,21 +120,21 @@ function IngresoBinesAExcluir({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Ingreso de Bines a excluir de Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>Ingreso de Estatus de Cuenta de Gastos de Cobranza</h2>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
           <FormInput
-            label="BIN:"
-            name="bin"
-            value={formData.bin}
-            placeholder="Ingrese el nuevo bin a excluir..."
+            label="ESTATUS DE CUENTA:"
+            name="estatusCta"
+            value={formData.estatusCta}
+            placeholder="Ingrese el nuevo estatus de cuenta a excluir..."
             onChange={handleChange}
             required
             autoComplete="off"
           />
         </div>
         <div className={styles.buttonContainer}>
-          <RegisterButton type="submit">Ingresar Bin</RegisterButton>
+          <RegisterButton type="submit">Ingresar Estatus de Cuenta</RegisterButton>
         </div>
       </form>
 
@@ -142,7 +143,7 @@ function IngresoBinesAExcluir({ onRefresh }: { onRefresh: () => void }) {
         isOpen={showModal}
         title="Confirmar ingreso"
         confirmText="Sí, ingresar"
-        message={`¿Deseas ingresar el bin "${formData.bin}"?`}
+        message={`¿Deseas ingresar el estatus de cuenta "${formData.estatusCta}"?`}
         cancelText="Cancelar"
         onConfirm={handleConfirm}
         onCancel={() => setShowModal(false)}
@@ -152,10 +153,10 @@ function IngresoBinesAExcluir({ onRefresh }: { onRefresh: () => void }) {
   );
 }
 
-function EliminacionBinesAExcluir({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
-  const { data, loading: loadingData, error } = getBinesExcluir(refreshKey);
+function EliminacionEstatusCuentaAExcluir({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
+  const { data, loading: loadingData, error } = getEstatusCuentaExcluir(refreshKey);
   const [formData, setFormData] = useState({
-    bin: '',
+    estatusCta: '',
   });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -171,30 +172,30 @@ function EliminacionBinesAExcluir({ refreshKey, onRefresh }: { refreshKey: numbe
   };
 
 const handleConfirmDelete = async () => {
-  if (!selectedBin) {
-    Swal.fire("Error", "No se encontró el bin seleccionado.", "error");
+  if (!selectedEstatusCta) {
+    Swal.fire("Error", "No se encontró el estatus de cuenta seleccionado.", "error");
     setShowModal(false);
     return;
   }
 
   setLoading(true);
   try {
-    await deleteBinAExcluir(selectedBin.bin_id); // solo el id
+    await deleteEstatusCuentaAExcluir(selectedEstatusCta.status_id); // solo el id
 
     Swal.fire({
-      title: "Bin eliminado correctamente",
+      title: "Estatus de cuenta eliminado correctamente",
       icon: "success",
       timer: 2000,
       timerProgressBar: true,
     });
 
     setFormData({
-      bin: ''
+      estatusCta: ''
     });
     onRefresh();
   } catch (err) {
     Swal.fire({
-      title: "Error al eliminar el bin",
+      title: "Error al eliminar el estatus de cuenta",
       icon: "error",
       text: (err as Error).message || "",
     });
@@ -206,42 +207,42 @@ const handleConfirmDelete = async () => {
 
 
   // Preparar opciones para el combo
-  const binOptions = Array.isArray(data)
+  const estatusCtaOptions = Array.isArray(data)
     ? [...data]
-        .sort((a, b) => a.bin.localeCompare(b.bin))
+        .sort((a, b) => a.estatusCta.localeCompare(b.estatusCta))
         .map((param: any) => ({
-          value: param.bin,
-          label: param.bin,
+          value: param.estatusCta,
+          label: param.estatusCta,
         }))
     : [];
 
-  const selectedBin = Array.isArray(data)
-  ? data.find((p) => p.bin === formData.bin)
+  const selectedEstatusCta = Array.isArray(data)
+  ? data.find((p) => p.estatusCta === formData.estatusCta)
   : null;
 
-  const valorActual = {bin: selectedBin?.bin ?? "" };
+  const valorActual = {estatusCta: selectedEstatusCta?.estatusCta ?? "" };
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Eliminación de Bines en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>Eliminación de Estatus de Cuenta en Gastos de Cobranza</h2>
 
-      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando bines..." />}
+      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="BIN:"
-              name="bin"
-              value={formData.bin}
-              options={binOptions}
+              label="ESTATUS DE CUENTA:"
+              name="estatusCta"
+              value={formData.estatusCta}
+              options={estatusCtaOptions}
               onChange={handleChange}
               required
             />
           </div>
           <div className={styles.buttonContainer}>
-            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Bin</DeleteButton>
+            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Estatus de Cuenta</DeleteButton>
           </div>
         </form>
       )}
@@ -249,7 +250,7 @@ const handleConfirmDelete = async () => {
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar el bin "${formData.bin}" ?`}
+        message={`¿Deseas eliminar el estatus de cuenta "${formData.estatusCta}" ?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
@@ -261,25 +262,25 @@ const handleConfirmDelete = async () => {
 }
 
 
-function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
+function ActualizacionEstatusCuentaAExcluir({refreshKey, onRefresh,}: {
   refreshKey: number;
   onRefresh: () => void;
 }) {
-  const { data: bines, loading, error } = getBinesExcluir(refreshKey);
+  const { data: estatus, loading, error } = getEstatusCuentaExcluir(refreshKey);
   const [formData, setFormData] = useState({
-    bin: '',
-    binActualizado: ''
+    estatusCta: '',
+    estatusCtaActualizado: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   // Servicio seleccionado en base al código seleccionado
-  const selectedBin = Array.isArray(bines)
-    ? bines.find((p) => p.bin === formData.bin)
+  const selectedEstatusCta = Array.isArray(estatus)
+    ? estatus.find((p) => p.estatusCta === formData.estatusCta)
     : null;
 
   const valorActual = {
-    bin: selectedBin?.bin ?? '',
+    bin: selectedEstatusCta?.estatusCta ?? '',
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -291,16 +292,16 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
     e.preventDefault();
 
     if (
-      !formData.bin
+      !formData.estatusCta
     ) {
       Swal.fire('Campos requeridos', 'Debes completar todos campos.', 'warning');
       return;
     }
 
-    if (!selectedBin) {
+    if (!selectedEstatusCta) {
       Swal.fire(
-        'Bin no encontrado',
-        `El bin "${formData.bin}" no existe.`,
+        'Estatus de Cuenta no encontrado',
+        `El Estatus de Cuenta "${formData.estatusCta}" no existe.`,
         'error'
       );
       return;
@@ -310,18 +311,18 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
   };
 
   // Opciones para el select de servicio financiero
-  const binOptions = Array.isArray(bines)
-    ? [...bines]
-        .sort((a, b) => a.bin.localeCompare(b.bin))
+  const estatusCtaOptions = Array.isArray(estatus)
+    ? [...estatus]
+        .sort((a, b) => a.estatusCta.localeCompare(b.estatusCta))
         .map((param: any) => ({
-          value: param.bin,
-          label: param.bin,
+          value: param.estatusCta,
+          label: param.estatusCta,
         }))
     : [];
 
   const handleConfirmUpdate = async () => {
-    if (!selectedBin) {
-      Swal.fire('Error', 'No hay servicio seleccionado válido.', 'error');
+    if (!selectedEstatusCta) {
+      Swal.fire('Error', 'No hay estatus de cuenta seleccionado válido.', 'error');
       setShowModal(false);
       return;
     }
@@ -331,21 +332,21 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
 
     // Construir payload de actualización (solo campos editables)
     const updates = {
-      binActualizado: formData.binActualizado, // si aplica en tu API
+      binActualizado: formData.estatusCtaActualizado, // si aplica en tu API
     };
 
     try {
       // Se asume que updateTarifaGeneral acepta (tarifa_id, updates)
-      await updateBinAExcluir({bin_id: selectedBin.bin_id, 
-        bin: formData.binActualizado});
+      await updateEstatusCuentaAExcluir({status_id: selectedEstatusCta.status_id, 
+        estatusCta: formData.estatusCtaActualizado});
       Swal.fire(
         'Actualización exitosa',
-        `El bin "${formData.bin}" fue actualizado.`,
+        `El Estatus de Cuenta "${formData.estatusCta}" fue actualizado.`,
         'success'
       );
       setFormData({
-        bin: '',
-        binActualizado: '',
+        estatusCta: '',
+        estatusCtaActualizado: '',
       });
       onRefresh();
     } catch (err: any) {
@@ -357,29 +358,29 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Actualización de Bines a excluir en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>Actualización de Estatus de Cuenta a excluir en Gastos de Cobranza</h2>
 
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando bines..." />}
+      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {!loading && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="BIN:"
-              name="bin"
-              value={formData.bin}
-              options={binOptions}
+              label="ESTATUS DE CUENTA:"
+              name="estatusCta"
+              value={formData.estatusCta}
+              options={estatusCtaOptions}
               onChange={handleChange}
               required
             />
           </div>
           <div className={styles.formGroup}>
             <FormInput
-              label="BIN:"
-              name="binActualizado"
-              value={formData.binActualizado}
-              placeholder="Ingrese el nuevo valor del bin..."
+              label="ESTATUS DE CUENTA:"
+              name="estatusCtaActualizado"
+              value={formData.estatusCtaActualizado}
+              placeholder="Ingrese el nuevo valor del estatus de cuenta..."
               onChange={handleChange}
               required
               autoComplete="off"
@@ -387,7 +388,7 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
           </div>
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
-              {submitting ? 'Actualizando...' : 'Actualizar Parámetro'}
+              {submitting ? 'Actualizando...' : 'Actualizar Estatus de Cuenta'}
             </RegisterButton>
           </div>
         </form>
@@ -396,7 +397,7 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar actualización"
-        message={`¿Deseas actualizar el bin: "${formData.bin}" al nuevo valor "${formData.binActualizado}"?`}
+        message={`¿Deseas actualizar el estatus de cuenta: "${formData.estatusCta}" al nuevo valor "${formData.estatusCtaActualizado}"?`}
         confirmText="Sí, actualizar"
         cancelText="Cancelar"
         onConfirm={handleConfirmUpdate}
@@ -407,7 +408,7 @@ function ActualizacionBinesAExcluir({refreshKey, onRefresh,}: {
   );
 }
 
-export default function BinesAExcluir() {
+export default function EstatusCuentaAExcluir() {
   const [activeTab, setActiveTab] = useState('Consulta');
   const [isClient, setIsClient] = useState(false);
   const tabs = ['Consulta', 'Ingreso', 'Eliminación', 'Actualización'];
@@ -424,15 +425,15 @@ export default function BinesAExcluir() {
 
   return (
     <div className={styles.pageContainer}>
-      <h1 className={styles.pageTitle}>Bines a excluir en Gastos de Cobranza</h1>
+      <h1 className={styles.pageTitle}>Estatus de Cuenta a excluir en Gastos de Cobranza</h1>
       <div className={styles.tabsContainer}>
         <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {activeTab === 'Consulta' && <ConsultaBinesAExcluir refreshKey={refreshKey} />}
-      {activeTab === 'Ingreso' && <IngresoBinesAExcluir onRefresh={() => setRefreshKey(prev => prev + 1)} />}
-      {activeTab === 'Eliminación' && <EliminacionBinesAExcluir refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
-      {activeTab === 'Actualización' && (<ActualizacionBinesAExcluir refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
+      {activeTab === 'Consulta' && <ConsultaEstatusCuentaAExcluir refreshKey={refreshKey} />}
+      {activeTab === 'Ingreso' && <IngresoEstatusCuentaAExcluir onRefresh={() => setRefreshKey(prev => prev + 1)} />}
+      {activeTab === 'Eliminación' && <EliminacionEstatusCuentaAExcluir refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)} />}
+      {activeTab === 'Actualización' && (<ActualizacionEstatusCuentaAExcluir refreshKey={refreshKey} onRefresh={() => setRefreshKey(prev => prev + 1)}/>
 )}
     </div>
   );

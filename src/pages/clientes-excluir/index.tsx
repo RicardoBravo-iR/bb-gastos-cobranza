@@ -146,7 +146,7 @@ function IngresoClientesAExcluir({ onRefresh }: { onRefresh: () => void }) {
           />
         </div>
         <div className={styles.buttonContainer}>
-          <RegisterButton type="submit">Ingresar Cliente a excluir</RegisterButton>
+          <RegisterButton type="submit">Ingresar Cliente</RegisterButton>
         </div>
       </form>
 
@@ -403,7 +403,7 @@ function ActualizacionClientesAExcluir({
 
           <div className={styles.formGroup}>
             <FormInput
-              label="NUEVA IDENTIFICACION:"
+              label="IDENTIFICACION:"
               name="identificacionCliente"
               value={formData.identificacionCliente}
               placeholder="Ingrese el nuevo valor de identificación del cliente..."

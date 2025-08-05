@@ -569,7 +569,7 @@ function ActualizacionTarifas({refreshKey, onRefresh,}: {
           </div>
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
-              {submitting ? 'Actualizando...' : 'Actualizar Parámetro'}
+              {submitting ? 'Actualizando...' : 'Actualizar Tarifa'}
             </RegisterButton>
           </div>
         </form>

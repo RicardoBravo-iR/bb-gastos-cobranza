@@ -41,7 +41,7 @@ export default function Sidebar() {
 						</Link>
 					</li>
 					<li className={optionNav}>
-						<Link href="/option-4" className={optionLink}>
+						<Link href="/estatus-cuenta-excluir" className={optionLink}>
 							<span>Estatus de Cuenta a excluir en Gastos de Cobranza</span>
 						</Link>
 					</li>
