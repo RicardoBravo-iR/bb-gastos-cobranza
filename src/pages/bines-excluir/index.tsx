@@ -1,6 +1,5 @@
 'use client';
 
-import { getTarifasGenerales } from "@/api/get-tarifas-generales";
 import { getBinesExcluir } from "@/api/get-bines-excluir";
 import { postBinAExcluir } from "@/api/post-bines-excluir";
 import { deleteBinAExcluir } from "@/api/delete-bines-excluir";
