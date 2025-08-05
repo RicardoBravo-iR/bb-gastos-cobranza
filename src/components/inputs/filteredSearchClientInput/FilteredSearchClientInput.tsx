@@ -1,9 +1,8 @@
-// filteredSearchInput.tsx
 import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from 'react';
-import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults} from './FilteredSearchInput.styles';
+import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults} from './FilteredSearchClientInput.styles';
 import { getClientesAExcluir, ClienteAExcluir } from '@/api/get-clientes-excluir';
 
-interface FilteredSearchInputProps {
+interface FilteredSearchClientInputProps {
   label?: string;
   placeholder?: string;
   onSelect?: (cliente: ClienteAExcluir) => void;
@@ -13,7 +12,7 @@ interface FilteredSearchInputProps {
   minCharsToSearch?: number;
 }
 
-export const FilteredSearchInput: React.FC<FilteredSearchInputProps> = ({
+export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps> = ({
   label = 'Buscar cliente a excluir',
   placeholder = 'Escribe identificación o ID...',
   onSelect,
@@ -158,4 +157,4 @@ export const FilteredSearchInput: React.FC<FilteredSearchInputProps> = ({
   );
 };
 
-export default FilteredSearchInput;
+export default FilteredSearchClientInput;

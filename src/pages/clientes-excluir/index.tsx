@@ -15,7 +15,7 @@ import FormInput from '@/components/inputs/formInput/FormInput';
 import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
-import FilteredSearchInput from "@/components/inputs/filteredSearchInput/FilteredSearchInput";
+import FilteredSearchClientInput from "@/components/inputs/filteredSearchClientInput/FilteredSearchClientInput";
 import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
 
@@ -249,7 +249,7 @@ function EliminacionClientesAExcluir({
       {!loadingData && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
-            <FilteredSearchInput
+            <FilteredSearchClientInput
               label="IDENTIFICACIÓN:"
               placeholder="Busca por identificación..."
               refreshKey={refreshKey}
@@ -384,7 +384,7 @@ function ActualizacionClientesAExcluir({
       {!loading && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
-            <FilteredSearchInput
+            <FilteredSearchClientInput
               label="IDENTIFICACION:"
               placeholder="Busca por identificación..."
               refreshKey={refreshKey}

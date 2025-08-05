@@ -1,6 +1,6 @@
 'use client';
 
-import { getEstatusCuentaExcluir } from "@/api/get-estatus-cuenta-excluir";
+import { getEstatusCuentaExcluir, EstatusCuentaExcluir } from "@/api/get-estatus-cuenta-excluir";
 import { postEstatusCuentaAExcluir } from "@/api/post-estatus-cuenta-excluir";
 import { deleteEstatusCuentaAExcluir } from "@/api/delete-estatus-cuenta-excluir";
 import { updateEstatusCuentaAExcluir } from "@/api/update-estatus-cuenta-excluir";
@@ -16,6 +16,7 @@ import ExcelExport from '@/components/buttons/excelExport/ExcelExport';
 import RegisterButton from '@/components/buttons/registerButton/RegisterButton';
 import DeleteButton from '@/components/buttons/deleteButton/DeleteButton';
 import FormSelect from '@/components/inputs/formSelect/FormSelect';
+import FilteredSearchEstatusInput from "@/components/inputs/filteredSearchEstatusInput/FilteredSearchEstatusInput";
 import LoadingSpinner from '@/components/loading/loadingSpinner/loadingSpinner';
 import Swal from 'sweetalert2';
 
@@ -153,96 +154,98 @@ function IngresoEstatusCuentaAExcluir({ onRefresh }: { onRefresh: () => void }) 
   );
 }
 
-function EliminacionEstatusCuentaAExcluir({ refreshKey, onRefresh }: { refreshKey: number, onRefresh: () => void }) {
+
+function EliminacionEstatusCuentaAExcluir({
+  refreshKey,
+  onRefresh,
+}: {
+  refreshKey: number;
+  onRefresh: () => void;
+}) {
   const { data, loading: loadingData, error } = getEstatusCuentaExcluir(refreshKey);
+
   const [formData, setFormData] = useState({
-    estatusCta: '',
+    estatusCta: "",
   });
+
+  const [selectedEstatus, setSelectedEstatus] = useState<EstatusCuentaExcluir | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedEstatus) {
+      Swal.fire("Error", "No se ha seleccionado un estatus de cuenta válido.", "error");
+      return;
+    }
     setShowModal(true);
   };
 
-const handleConfirmDelete = async () => {
-  if (!selectedEstatusCta) {
-    Swal.fire("Error", "No se encontró el estatus de cuenta seleccionado.", "error");
-    setShowModal(false);
-    return;
-  }
+  const handleConfirmDelete = async () => {
+    if (!selectedEstatus) {
+      Swal.fire("Error", "No se encontró el estatus de cuenta seleccionado.", "error");
+      setShowModal(false);
+      return;
+    }
 
-  setLoading(true);
-  try {
-    await deleteEstatusCuentaAExcluir(selectedEstatusCta.status_id); // solo el id
+    setLoading(true);
+    try {
+      await deleteEstatusCuentaAExcluir(selectedEstatus.status_id);
 
-    Swal.fire({
-      title: "Estatus de cuenta eliminado correctamente",
-      icon: "success",
-      timer: 2000,
-      timerProgressBar: true,
-    });
+      Swal.fire({
+        title: "Estatus de cuenta eliminado correctamente",
+        icon: "success",
+        timer: 2000,
+        timerProgressBar: true,
+      });
 
-    setFormData({
-      estatusCta: ''
-    });
-    onRefresh();
-  } catch (err) {
-    Swal.fire({
-      title: "Error al eliminar el estatus de cuenta",
-      icon: "error",
-      text: (err as Error).message || "",
-    });
-  } finally {
-    setLoading(false);
-    setShowModal(false);
-  }
-};
+      setSelectedEstatus(null);
+      onRefresh();
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error al eliminar el estatus de cuenta",
+        icon: "error",
+        text: err.message || "",
+      });
+    } finally {
+      setLoading(false);
+      setShowModal(false);
+    }
+  };
 
-
-  // Preparar opciones para el combo
-  const estatusCtaOptions = Array.isArray(data)
-    ? [...data]
-        .sort((a, b) => a.estatusCta.localeCompare(b.estatusCta))
-        .map((param: any) => ({
-          value: param.estatusCta,
-          label: param.estatusCta,
-        }))
-    : [];
-
-  const selectedEstatusCta = Array.isArray(data)
-  ? data.find((p) => p.estatusCta === formData.estatusCta)
-  : null;
-
-  const valorActual = {estatusCta: selectedEstatusCta?.estatusCta ?? "" };
+  const valorActual = {
+    estatusCta: selectedEstatus?.estatusCta ?? "",
+  };
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Eliminación de Estatus de Cuenta en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>
+        Eliminación de Estatus de Cuenta en Gastos de Cobranza
+      </h2>
 
-      {loadingData && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />}
+      {loadingData && (
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />
+      )}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
-            <FormSelect
+            <FilteredSearchEstatusInput
               label="ESTATUS DE CUENTA:"
-              name="estatusCta"
-              value={formData.estatusCta}
-              options={estatusCtaOptions}
-              onChange={handleChange}
-              required
+              placeholder="Busca un estatus de cuenta..."
+              refreshKey={refreshKey}
+              onSelect={(estatus) => {
+                setSelectedEstatus(estatus);
+                setFormData({
+                  estatusCta: estatus.estatusCta,
+                });
+              }}
+              filterBy="estatusCta"
             />
           </div>
           <div className={styles.buttonContainer}>
-            <DeleteButton onClick={() => setShowModal(true)}>Eliminar Estatus de Cuenta</DeleteButton>
+            <DeleteButton type="submit">Eliminar Estatus de Cuenta</DeleteButton>
           </div>
         </form>
       )}
@@ -250,7 +253,7 @@ const handleConfirmDelete = async () => {
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar el estatus de cuenta "${formData.estatusCta}" ?`}
+        message={`¿Deseas eliminar el estatus de cuenta "${valorActual.estatusCta}"?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
@@ -262,47 +265,35 @@ const handleConfirmDelete = async () => {
 }
 
 
-function ActualizacionEstatusCuentaAExcluir({refreshKey, onRefresh,}: {
+function ActualizacionEstatusCuentaAExcluir({
+  refreshKey,
+  onRefresh,
+}: {
   refreshKey: number;
   onRefresh: () => void;
 }) {
   const { data: estatus, loading, error } = getEstatusCuentaExcluir(refreshKey);
   const [formData, setFormData] = useState({
-    estatusCta: '',
-    estatusCtaActualizado: ''
+    estatusCta: "",
+    estatusCtaActualizado: "",
   });
+  const [selectedEstatus, setSelectedEstatus] = useState<EstatusCuentaExcluir | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
-  // Servicio seleccionado en base al código seleccionado
-  const selectedEstatusCta = Array.isArray(estatus)
-    ? estatus.find((p) => p.estatusCta === formData.estatusCta)
-    : null;
-
-  const valorActual = {
-    bin: selectedEstatusCta?.estatusCta ?? '',
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.estatusCta
-    ) {
-      Swal.fire('Campos requeridos', 'Debes completar todos campos.', 'warning');
+    if (!formData.estatusCta || !formData.estatusCtaActualizado) {
+      Swal.fire("Campos requeridos", "Debes completar todos campos.", "warning");
       return;
     }
 
-    if (!selectedEstatusCta) {
+    if (!selectedEstatus) {
       Swal.fire(
-        'Estatus de Cuenta no encontrado',
+        "Estatus de Cuenta no encontrado",
         `El Estatus de Cuenta "${formData.estatusCta}" no existe.`,
-        'error'
+        "error"
       );
       return;
     }
@@ -310,19 +301,9 @@ function ActualizacionEstatusCuentaAExcluir({refreshKey, onRefresh,}: {
     setShowModal(true);
   };
 
-  // Opciones para el select de servicio financiero
-  const estatusCtaOptions = Array.isArray(estatus)
-    ? [...estatus]
-        .sort((a, b) => a.estatusCta.localeCompare(b.estatusCta))
-        .map((param: any) => ({
-          value: param.estatusCta,
-          label: param.estatusCta,
-        }))
-    : [];
-
   const handleConfirmUpdate = async () => {
-    if (!selectedEstatusCta) {
-      Swal.fire('Error', 'No hay estatus de cuenta seleccionado válido.', 'error');
+    if (!selectedEstatus) {
+      Swal.fire("Error", "No hay estatus de cuenta seleccionado válido.", "error");
       setShowModal(false);
       return;
     }
@@ -330,27 +311,26 @@ function ActualizacionEstatusCuentaAExcluir({refreshKey, onRefresh,}: {
     setShowModal(false);
     setSubmitting(true);
 
-    // Construir payload de actualización (solo campos editables)
-    const updates = {
-      binActualizado: formData.estatusCtaActualizado, // si aplica en tu API
-    };
-
     try {
-      // Se asume que updateTarifaGeneral acepta (tarifa_id, updates)
-      await updateEstatusCuentaAExcluir({status_id: selectedEstatusCta.status_id, 
-        estatusCta: formData.estatusCtaActualizado});
-      Swal.fire(
-        'Actualización exitosa',
-        `El Estatus de Cuenta "${formData.estatusCta}" fue actualizado.`,
-        'success'
-      );
-      setFormData({
-        estatusCta: '',
-        estatusCtaActualizado: '',
+      await updateEstatusCuentaAExcluir({
+        status_id: selectedEstatus.status_id,
+        estatusCta: formData.estatusCtaActualizado,
       });
+
+      Swal.fire(
+        "Actualización exitosa",
+        `El Estatus de Cuenta "${formData.estatusCta}" fue actualizado.`,
+        "success"
+      );
+
+      setFormData({
+        estatusCta: "",
+        estatusCtaActualizado: "",
+      });
+      setSelectedEstatus(null);
       onRefresh();
     } catch (err: any) {
-      Swal.fire('Error', err.message || 'Ocurrió un error al actualizar.', 'error');
+      Swal.fire("Error", err.message || "Ocurrió un error al actualizar.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -358,37 +338,53 @@ function ActualizacionEstatusCuentaAExcluir({refreshKey, onRefresh,}: {
 
   return (
     <div className={styles.pageContainer}>
-      <h2 className={styles.operationTitle}>Actualización de Estatus de Cuenta a excluir en Gastos de Cobranza</h2>
+      <h2 className={styles.operationTitle}>
+        Actualización de Estatus de Cuenta a excluir en Gastos de Cobranza
+      </h2>
 
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && (
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando estatus de cuenta..." />
+      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loading && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
-            <FormSelect
+            <FilteredSearchEstatusInput
               label="ESTATUS DE CUENTA:"
-              name="estatusCta"
-              value={formData.estatusCta}
-              options={estatusCtaOptions}
-              onChange={handleChange}
-              required
+              placeholder="Busca un estatus de cuenta..."
+              refreshKey={refreshKey}
+              onSelect={(estatus) => {
+                setSelectedEstatus(estatus);
+                setFormData((prev) => ({
+                  ...prev,
+                  estatusCta: estatus.estatusCta,
+                }));
+              }}
+              filterBy="estatusCta"
             />
           </div>
+
           <div className={styles.formGroup}>
             <FormInput
               label="ESTATUS DE CUENTA:"
               name="estatusCtaActualizado"
               value={formData.estatusCtaActualizado}
               placeholder="Ingrese el nuevo valor del estatus de cuenta..."
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  estatusCtaActualizado: e.target.value,
+                }))
+              }
               required
               autoComplete="off"
             />
           </div>
+
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
-              {submitting ? 'Actualizando...' : 'Actualizar Estatus de Cuenta'}
+              {submitting ? "Actualizando..." : "Actualizar Estatus de Cuenta"}
             </RegisterButton>
           </div>
         </form>
