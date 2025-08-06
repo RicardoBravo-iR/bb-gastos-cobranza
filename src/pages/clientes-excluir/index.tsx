@@ -4,7 +4,7 @@ import { getClientesAExcluir, ClienteAExcluir } from "@/api/get-clientes-excluir
 import { postClienteAExcluir } from "@/api/post-clientes-excluir";
 import { deleteClienteAExcluir } from "@/api/delete-clientes-excluir";
 import { updateClienteAExcluir } from "@/api/update-clientes-excluir";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Tabs from '@/components/tabs/Tabs';
 import styles from '@/styles/ParametrosGenerales.module.css';
@@ -23,13 +23,25 @@ function ConsultaClientesAExcluir({ refreshKey }: { refreshKey: number }) {
   const { data, loading, error } = getClientesAExcluir(refreshKey);
   const [filter, setFilter] = useState('');
 
-  const rows = Array.isArray(data)
-  ? [...data].sort((a, b) => a.identificacion.localeCompare(b.identificacion))
-  : [];
+  const rows = useMemo(() => {
+    if (loading || !Array.isArray(data)) return [];
+    return [...data].sort((a, b) => a.identificacion.localeCompare(b.identificacion));
+  }, [data, loading]);
 
-  const filteredRows = rows.filter((param) =>
-    param.identificacion.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filteredRows = useMemo(() => {
+    const search = filter.trim().toLowerCase();
+    return rows.filter((param) => {
+      const identificacion = (param.identificacion || "").trim().toLowerCase();
+      return identificacion.includes(search) || identificacion === search;
+    });
+  }, [rows, filter]);
+
+  useEffect(() => {
+    console.log('Filas Totales: ', rows);
+    console.log('Filas Filtradas: ', filteredRows);
+  }, [rows, filteredRows]);
+
+  const shouldRenderTable = !loading && !error && Array.isArray(data) && data.length > 0;
 
   return (
     <div className={styles.pageContainer}>
@@ -46,26 +58,39 @@ function ConsultaClientesAExcluir({ refreshKey }: { refreshKey: number }) {
         />
         <div className={styles.exportButtonContainer}>
           <ExcelExport
-            data={data}
+            data={rows} // usar rows para exportar ya ordenado
             fileName="clientes-excluir.xlsx"
             label="Exportar Excel"
             sortBy="identificacion"
             direction="asc"
             columnOrder={['identificacion', 'fechaVigenciaHasta']}
-            columnHeaders={{identificacion: 'Identificación', fechaVigenciaHasta: 'Fecha Vigencia Hasta'}}
+            columnHeaders={{ identificacion: 'Identificación', fechaVigenciaHasta: 'Fecha Vigencia Hasta' }}
           />
         </div>
       </form>
 
       {/* Tabla */}
-      {loading && <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes a excluir..." />}
+      {loading && (
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes a excluir..." />
+      )}
+
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!loading && !error && (
+
+      {shouldRenderTable && (
         <Table
           data={filteredRows}
           visibleColumns={['identificacion', 'fechaVigenciaHasta']}
-          headerLabels={{identificacion: 'Identificación', fechaVigenciaHasta: 'Fecha Vigencia Hasta'}}
+          headerLabels={{
+            identificacion: 'Identificación',
+            fechaVigenciaHasta: 'Fecha Vigencia Hasta',
+          }}
         />
+      )}
+
+      {!loading && !error && Array.isArray(data) && data.length > 0 && filteredRows.length === 0 && (
+        <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+          No se encontraron resultados con el filtro actual.
+        </p>
       )}
     </div>
   );
@@ -377,7 +402,7 @@ function ActualizacionClientesAExcluir({
       </h2>
 
       {loading && (
-        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando parámetros..." />
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes a excluir..." />
       )}
       {error && <p style={{ color: "red" }}>{error}</p>}
 

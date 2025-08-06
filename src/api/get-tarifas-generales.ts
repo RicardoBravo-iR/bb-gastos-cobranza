@@ -6,14 +6,13 @@ import { getCognitoToken } from "@/api/auth-cognito";
 export interface TarifaGeneral {
   tarifa_id: string;
   codigoServicioFinanciero: string;
-  diasVencidoDesde: number;
-  diasVencidoHasta: number;
-  montoVencidoDesde: number;
-  montoVencidoHasta: number;
-  tarifaSinIva: number;
+  diasVencidoDesde: string;
+  diasVencidoHasta: string;
+  montoVencidoDesde: string;
+  montoVencidoHasta: string;
+  tarifaSinIva: string;
 }
 
-// Hook para obtener las tarifas generales; si cambia refreshKey se refetch.
 export function getTarifasGenerales(refreshKey: number = 0) {
   const [data, setData] = useState<TarifaGeneral[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,41 +25,64 @@ export function getTarifasGenerales(refreshKey: number = 0) {
         if (!API_SAC) throw new Error("No se ha configurado la URL del API (API_SAC)");
 
         const token = await getCognitoToken();
-        const url = `${API_SAC}cobranzas/rateCharge/get`;
         const headers = {
           Authorization: `Bearer ${token}`,
         };
 
-        console.log("[API] URL a consumir:", url);
-        console.log("[API] Headers enviados:", headers);
+        let allItems: TarifaGeneral[] = [];
+        let nextPageToken: string | undefined = undefined;
+        let hasNextPage = true;
+        let previousTokens = new Set<string>();
+        let pageCount = 0;
+        const MAX_PAGES = 100000;
 
-        const response = await fetch(url, {
-          method: "GET",
-          headers,
-        });
+        while (hasNextPage && pageCount < MAX_PAGES) {
+          let url = `${API_SAC}cobranzas/rateCharge/get`;
+          if (nextPageToken) {
+            url += `?nextPageToken=${encodeURIComponent(nextPageToken)}`;
+          }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("[API] Error llamando al API de tarifas:", errorText);
-          throw new Error("No se pudo obtener las tarifas generales");
+          console.log(`[API] Llamando a: ${url}`);
+
+          const response = await fetch(url, {
+            method: "GET",
+            headers,
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[API] Error llamando al API de tarifas:", errorText);
+            throw new Error("No se pudo obtener las tarifas generales");
+          }
+
+          const result = await response.json();
+          const items: TarifaGeneral[] = result?.data?.items || [];
+
+          if (items.length === 0) {
+            console.warn("[API] No se recibieron más items. Rompiendo bucle.");
+            break;
+          }
+
+          allItems = [...allItems, ...items];
+
+          const pagination = result?.data?.pagination;
+          hasNextPage = pagination?.hasNextPage ?? false;
+          const newToken = pagination?.nextPageToken;
+
+          if (!newToken || previousTokens.has(newToken)) {
+            console.warn("[API] Token repetido o no definido. Rompiendo bucle.");
+            break;
+          }
+
+          previousTokens.add(newToken);
+          nextPageToken = newToken;
+          pageCount++;
+
+          console.log(`[API] Página ${pageCount} cargada. Total acumulado: ${allItems.length}`);
         }
 
-        const result = await response.json();
-        console.log("[API] Respuesta del API de tarifas:", result);
-
-        let items: TarifaGeneral[] = [];
-        if (Array.isArray(result)) {
-          items = result;
-        } else if (Array.isArray(result.items)) {
-          items = result.items;
-        } else if (Array.isArray(result.data?.items)) {
-          items = result.data.items;
-        } else if (Array.isArray(result.data)) {
-          items = result.data;
-        }
-
-        setData(items);
-        console.log("[API] Datos de tarifas cargados en el estado:", items);
+        setData(allItems);
+        console.log("[API] Todas las tarifas cargadas correctamente:", allItems.length);
       } catch (err: any) {
         console.error("[API] Error en fetchData de tarifas:", err.message);
         setError(err.message);

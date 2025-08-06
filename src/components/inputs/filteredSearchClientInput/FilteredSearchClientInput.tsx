@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from 'react';
-import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults} from './FilteredSearchClientInput.styles';
+import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults } from './FilteredSearchClientInput.styles';
 import { getClientesAExcluir, ClienteAExcluir } from '@/api/get-clientes-excluir';
 
 interface FilteredSearchClientInputProps {
@@ -36,19 +36,36 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
 
   const filtered = useMemo<ClienteAExcluir[]>(() => {
     if (debouncedQuery.length < minCharsToSearch) return [];
+
     const lower = debouncedQuery.toLowerCase();
-    return clientes.filter((c) => {
+
+    const matches = clientes.filter((c) => {
       const byId =
         (filterBy === 'cliente_id' || filterBy === 'both') &&
         c.cliente_id?.toLowerCase().includes(lower);
+
       const byIdent =
         (filterBy === 'identificacion' || filterBy === 'both') &&
         c.identificacion?.toLowerCase().includes(lower);
+
       return Boolean(byId || byIdent);
+    });
+
+    // Ordenar alfabéticamente por identificacion y luego cliente_id
+    return matches.sort((a, b) => {
+      const identA = (a.identificacion || '').toLowerCase();
+      const identB = (b.identificacion || '').toLowerCase();
+
+      if (identA && identB) return identA.localeCompare(identB);
+
+      // fallback a cliente_id si no hay identificacion
+      const idA = (a.cliente_id || '').toLowerCase();
+      const idB = (b.cliente_id || '').toLowerCase();
+      return idA.localeCompare(idB);
     });
   }, [debouncedQuery, clientes, filterBy, minCharsToSearch]);
 
-  // Close dropdown on outside click
+  // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -60,7 +77,7 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard navigation
+  // Navegación con teclado
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!visible) return;
     if (e.key === 'ArrowDown') {

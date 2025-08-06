@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from "react";
-import {
-  Wrapper,
-  InputGroup,
-  Label,
-  Input,
-  Dropdown,
-  Item,
-  NoResults,
-} from "./FilteredSearchEstatusInput.styles";
+import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults } from "./FilteredSearchEstatusInput.styles";
 import { getEstatusCuentaExcluir, EstatusCuentaExcluir } from "@/api/get-estatus-cuenta-excluir";
 
 interface FilteredSearchEstatusInputProps {
@@ -43,15 +35,26 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
 
   const filtered = useMemo<EstatusCuentaExcluir[]>(() => {
     if (debouncedQuery.length < minCharsToSearch) return [];
+
     const lower = debouncedQuery.toLowerCase();
-    return estatusList.filter((e) => {
+
+    const matches = estatusList.filter((e) => {
       const byStatus =
         (filterBy === "estatusCta" || filterBy === "both") &&
         e.estatusCta?.toLowerCase().includes(lower);
+
       const byId =
         (filterBy === "status_id" || filterBy === "both") &&
         e.status_id?.toLowerCase().includes(lower);
+
       return Boolean(byStatus || byId);
+    });
+
+    // Ordenar alfabéticamente por estatusCta y luego status_id si no hay
+    return matches.sort((a, b) => {
+      const aText = (a.estatusCta || a.status_id || "").toLowerCase();
+      const bText = (b.estatusCta || b.status_id || "").toLowerCase();
+      return aText.localeCompare(bText);
     });
   }, [debouncedQuery, estatusList, filterBy, minCharsToSearch]);
 
@@ -111,9 +114,7 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
             ref={inputRef}
             placeholder={placeholder}
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
               if (filtered.length > 0) setVisible(true);
             }}

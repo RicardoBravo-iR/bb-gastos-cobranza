@@ -9,7 +9,6 @@ export interface ClienteAExcluir {
   identificacion: string;
 }
 
-// Hook para obtener los clientes a excluir; si cambia refreshKey se refetch.
 export function getClientesAExcluir(refreshKey: number = 0) {
   const [data, setData] = useState<ClienteAExcluir[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,43 +21,67 @@ export function getClientesAExcluir(refreshKey: number = 0) {
         if (!API_SAC) throw new Error("No se ha configurado la URL del API (API_SAC)");
 
         const token = await getCognitoToken();
-        const url = `${API_SAC}cobranzas/clientDontApplyCharge/get`;
         const headers = {
           Authorization: `Bearer ${token}`,
         };
 
-        console.log("[API] URL a consumir:", url);
-        console.log("[API] Headers enviados:", headers);
+        let allItems: ClienteAExcluir[] = [];
+        let nextPageToken: string | undefined = undefined;
+        let hasNextPage = true;
+        let previousTokens = new Set<string>();
+        let pageCount = 0;
+        const MAX_PAGES = 100000; // Seguridad por si acaso
 
-        const response = await fetch(url, {
-          method: "GET",
-          headers,
-        });
+        while (hasNextPage && pageCount < MAX_PAGES) {
+          let url = `${API_SAC}cobranzas/clientDontApplyCharge/get`;
+          if (nextPageToken) {
+            url += `?nextPageToken=${encodeURIComponent(nextPageToken)}`;
+          }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("[API] Error llamando al API de clientes a excluir:", errorText);
-          throw new Error("No se pudo obtener los clientes a excluir");
+          console.log(`[API] Llamando a: ${url}`);
+
+          const response = await fetch(url, {
+            method: "GET",
+            headers,
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[API] Error llamando al API:", errorText);
+            throw new Error("No se pudo obtener los clientes a excluir");
+          }
+
+          const result = await response.json();
+          const items: ClienteAExcluir[] = result?.data?.items || [];
+
+          if (items.length === 0) {
+            console.warn("[API] No se recibieron más items. Rompiendo bucle.");
+            break;
+          }
+
+          allItems = [...allItems, ...items];
+
+          const pagination = result?.data?.pagination;
+          hasNextPage = pagination?.hasNextPage ?? false;
+          const newToken = pagination?.nextPageToken;
+
+          // Detectar ciclo infinito
+          if (!newToken || previousTokens.has(newToken)) {
+            console.warn("[API] Token repetido o no definido. Rompiendo bucle.");
+            break;
+          }
+
+          previousTokens.add(newToken);
+          nextPageToken = newToken;
+          pageCount++;
+
+          console.log(`[API] Página ${pageCount} cargada. Total acumulado: ${allItems.length}`);
         }
 
-        const result = await response.json();
-        console.log("[API] Respuesta del API de clientes a excluir:", result);
-
-        let items: ClienteAExcluir[] = [];
-        if (Array.isArray(result)) {
-          items = result;
-        } else if (Array.isArray(result.items)) {
-          items = result.items;
-        } else if (Array.isArray(result.data?.items)) {
-          items = result.data.items;
-        } else if (Array.isArray(result.data)) {
-          items = result.data;
-        }
-
-        setData(items);
-        console.log("[API] Datos de clientes a excluir cargados en el estado:", items);
+        setData(allItems);
+        console.log("[API] Todos los datos cargados correctamente:", allItems.length);
       } catch (err: any) {
-        console.error("[API] Error en fetchData de clientes a excluir:", err.message);
+        console.error("[API] Error en fetchData:", err.message);
         setError(err.message);
       } finally {
         setLoading(false);
