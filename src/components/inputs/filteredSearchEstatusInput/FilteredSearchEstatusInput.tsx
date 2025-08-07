@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from "react";
 import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults } from "./FilteredSearchEstatusInput.styles";
-import { getEstatusCuentaExcluir, EstatusCuentaExcluir } from "@/api/get-estatus-cuenta-excluir";
+import {
+  getEstatusCuentaExcluir,
+  EstatusCuentaExcluir,
+} from "@/api/get-estatus-cuenta-excluir";
 
 interface FilteredSearchEstatusInputProps {
   label?: string;
   placeholder?: string;
   onSelect?: (estatus: EstatusCuentaExcluir) => void;
+  onClear?: () => void;
   refreshKey?: number;
-  /** campo por el que filtrar: 'estatusCta' | 'status_id' | 'both' */
   filterBy?: "estatusCta" | "status_id" | "both";
   minCharsToSearch?: number;
 }
@@ -16,6 +19,7 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
   label = "Buscar estatus de cuenta",
   placeholder = "Escribe el estatus o ID...",
   onSelect,
+  onClear,
   refreshKey = 0,
   filterBy = "both",
   minCharsToSearch = 1,
@@ -37,34 +41,30 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
     if (debouncedQuery.length < minCharsToSearch) return [];
 
     const lower = debouncedQuery.toLowerCase();
-
-    const matches = estatusList.filter((e) => {
-      const byStatus =
-        (filterBy === "estatusCta" || filterBy === "both") &&
-        e.estatusCta?.toLowerCase().includes(lower);
-
-      const byId =
-        (filterBy === "status_id" || filterBy === "both") &&
-        e.status_id?.toLowerCase().includes(lower);
-
-      return Boolean(byStatus || byId);
-    });
-
-    // Ordenar alfabéticamente por estatusCta y luego status_id si no hay
-    return matches.sort((a, b) => {
-      const aText = (a.estatusCta || a.status_id || "").toLowerCase();
-      const bText = (b.estatusCta || b.status_id || "").toLowerCase();
-      return aText.localeCompare(bText);
-    });
+    return estatusList
+      .filter((e) => {
+        const byStatus =
+          (filterBy === "estatusCta" || filterBy === "both") &&
+          e.estatusCta?.toLowerCase().includes(lower);
+        const byId =
+          (filterBy === "status_id" || filterBy === "both") &&
+          e.status_id?.toLowerCase().includes(lower);
+        return Boolean(byStatus || byId);
+      })
+      .sort((a, b) => {
+        const aText = (a.estatusCta || a.status_id || "").toLowerCase();
+        const bText = (b.estatusCta || b.status_id || "").toLowerCase();
+        return aText.localeCompare(bText);
+      });
   }, [debouncedQuery, estatusList, filterBy, minCharsToSearch]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setVisible(false);
         setHighlightedIndex(-1);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -85,6 +85,8 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
     } else if (e.key === "Escape") {
       setVisible(false);
       setHighlightedIndex(-1);
+      setQuery("");
+      onClear?.();
     }
   };
 
@@ -92,7 +94,7 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
     setQuery(estatus.estatusCta || estatus.status_id);
     setVisible(false);
     setHighlightedIndex(-1);
-    if (onSelect) onSelect(estatus);
+    onSelect?.(estatus);
   };
 
   useEffect(() => {
@@ -102,23 +104,45 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
       setVisible(false);
     }
     setHighlightedIndex(-1);
-  }, [debouncedQuery, filtered]);
+  }, [debouncedQuery, filtered, minCharsToSearch]);
+
+  const handleBlur = () => {
+    const match = estatusList.find(
+      (e) =>
+        (e.estatusCta || "").toLowerCase() === query.trim().toLowerCase()
+    );
+    if (match) {
+      selectEstatus(match);
+    } else {
+      setQuery("");
+      setVisible(false);
+      setHighlightedIndex(-1);
+      onClear?.();
+    }
+  };
 
   return (
     <Wrapper ref={containerRef}>
       <InputGroup>
-        <Label htmlFor="filtered-search-input">{label}</Label>
+        <Label htmlFor="filtered-estatus-input">{label}</Label>
         <div style={{ position: "relative", flex: 1 }}>
           <Input
-            id="filtered-search-input"
+            id="filtered-estatus-input"
             ref={inputRef}
             placeholder={placeholder}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setQuery(val);
+              if (val.trim() === "") {
+                onClear?.();
+              }
+            }}
             onFocus={() => {
               if (filtered.length > 0) setVisible(true);
             }}
             onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
             autoComplete="off"
             aria-autocomplete="list"
             aria-expanded={visible}

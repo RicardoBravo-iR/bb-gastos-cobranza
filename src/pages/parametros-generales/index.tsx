@@ -231,6 +231,19 @@ const valorActual = selectedParametro?.valor ?? "";
               required
             />
           </div>
+          {selectedParametro && (
+            <div style={{ marginBottom: "2rem" }}>
+              <Table
+                data={[selectedParametro]}
+                rowsPerPage={1}
+                visibleColumns={["parametro", "valor"]}
+                headerLabels={{
+                  identificacion: "Parámetro",
+                  fechaVigenciaHasta: "Valor",
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <DeleteButton onClick={() => setShowModal(true)}>Eliminar Parámetro</DeleteButton>
           </div>
@@ -342,6 +355,19 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
               autoComplete="off"
             />
           </div>
+          {selectedParametro && (
+            <div style={{ marginBottom: "2rem" }}>
+              <Table
+                data={[selectedParametro]}
+                rowsPerPage={1}
+                visibleColumns={["parametro", "valor"]}
+                headerLabels={{
+                  identificacion: "Parámetro",
+                  fechaVigenciaHasta: "Valor",
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
               {submitting ? "Actualizando..." : "Actualizar Parámetro"}

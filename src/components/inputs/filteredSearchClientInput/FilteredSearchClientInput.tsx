@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from 'react';
-import { Wrapper, InputGroup, Label, Input, Dropdown, Item, NoResults } from './FilteredSearchClientInput.styles';
+import {
+  Wrapper,
+  InputGroup,
+  Label,
+  Input,
+  Dropdown,
+  Item,
+  NoResults,
+} from './FilteredSearchClientInput.styles';
 import { getClientesAExcluir, ClienteAExcluir } from '@/api/get-clientes-excluir';
 
 interface FilteredSearchClientInputProps {
   label?: string;
   placeholder?: string;
   onSelect?: (cliente: ClienteAExcluir) => void;
+  onClear?: () => void;
   refreshKey?: number;
-  /** campo por el que filtrar: 'identificacion' | 'cliente_id' | ambos */
   filterBy?: 'identificacion' | 'cliente_id' | 'both';
   minCharsToSearch?: number;
 }
@@ -16,6 +24,7 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
   label = 'Buscar cliente a excluir',
   placeholder = 'Escribe identificación o ID...',
   onSelect,
+  onClear,
   refreshKey = 0,
   filterBy = 'both',
   minCharsToSearch = 1,
@@ -27,7 +36,6 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounce manual
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim()), 200);
@@ -38,34 +46,38 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     if (debouncedQuery.length < minCharsToSearch) return [];
 
     const lower = debouncedQuery.toLowerCase();
-
-    const matches = clientes.filter((c) => {
-      const byId =
-        (filterBy === 'cliente_id' || filterBy === 'both') &&
-        c.cliente_id?.toLowerCase().includes(lower);
-
-      const byIdent =
-        (filterBy === 'identificacion' || filterBy === 'both') &&
-        c.identificacion?.toLowerCase().includes(lower);
-
-      return Boolean(byId || byIdent);
-    });
-
-    // Ordenar alfabéticamente por identificacion y luego cliente_id
-    return matches.sort((a, b) => {
-      const identA = (a.identificacion || '').toLowerCase();
-      const identB = (b.identificacion || '').toLowerCase();
-
-      if (identA && identB) return identA.localeCompare(identB);
-
-      // fallback a cliente_id si no hay identificacion
-      const idA = (a.cliente_id || '').toLowerCase();
-      const idB = (b.cliente_id || '').toLowerCase();
-      return idA.localeCompare(idB);
-    });
+    return clientes
+      .filter((c) => {
+        const byId =
+          (filterBy === 'cliente_id' || filterBy === 'both') &&
+          c.cliente_id?.toLowerCase().includes(lower);
+        const byIdent =
+          (filterBy === 'identificacion' || filterBy === 'both') &&
+          c.identificacion?.toLowerCase().includes(lower);
+        return Boolean(byId || byIdent);
+      })
+      .sort((a, b) => {
+        const identA = (a.identificacion || '').toLowerCase();
+        const identB = (b.identificacion || '').toLowerCase();
+        return identA.localeCompare(identB);
+      });
   }, [debouncedQuery, clientes, filterBy, minCharsToSearch]);
 
-  // Cerrar dropdown al hacer clic fuera
+  // Llama onClear si no hay resultados
+  useEffect(() => {
+    if (onClear) {
+      if (
+        debouncedQuery.length < minCharsToSearch ||
+        filtered.length === 0 ||
+        !clientes.some(
+          (c) => c.identificacion?.toLowerCase() === debouncedQuery.toLowerCase()
+        )
+      ) {
+        onClear();
+      }
+    }
+  }, [debouncedQuery, filtered, minCharsToSearch, onClear, clientes]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -77,7 +89,6 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Navegación con teclado
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!visible) return;
     if (e.key === 'ArrowDown') {
@@ -94,18 +105,16 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     } else if (e.key === 'Escape') {
       setVisible(false);
       setHighlightedIndex(-1);
+      setQuery('');
+      if (onClear) onClear();
     }
   };
 
   const selectCliente = (cliente: ClienteAExcluir) => {
-    setQuery(
-      cliente.identificacion
-        ? `${cliente.identificacion}`
-        : cliente.cliente_id
-    );
+    setQuery(cliente.identificacion || cliente.cliente_id);
     setVisible(false);
     setHighlightedIndex(-1);
-    if (onSelect) onSelect(cliente);
+    onSelect?.(cliente);
   };
 
   useEffect(() => {
@@ -116,6 +125,20 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     }
     setHighlightedIndex(-1);
   }, [debouncedQuery, filtered]);
+
+  const handleBlur = () => {
+    // Si el input pierde el foco, intenta encontrar coincidencia exacta
+    const match = clientes.find(
+      (c) =>
+        (filterBy === 'identificacion' || filterBy === 'both') &&
+        c.identificacion?.toLowerCase() === query.trim().toLowerCase()
+    );
+    if (match) {
+      selectCliente(match);
+    } else {
+      onClear?.();
+    }
+  };
 
   return (
     <Wrapper ref={containerRef}>
@@ -128,12 +151,15 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
             placeholder={placeholder}
             value={query}
             onChange={(e) => {
-              setQuery(e.target.value);
+              const val = e.target.value;
+              setQuery(val);
+              if (val.trim() === '' && onClear) onClear();
             }}
             onFocus={() => {
               if (filtered.length > 0) setVisible(true);
             }}
             onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
             autoComplete="off"
             aria-autocomplete="list"
             aria-expanded={visible}
@@ -156,9 +182,7 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
                     id={`filtered-item-${idx}`}
                     highlighted={idx === highlightedIndex}
                     onMouseEnter={() => setHighlightedIndex(idx)}
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // evita que el blur ocurra antes del click
-                    }}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => selectCliente(c)}
                   >
                     <div>

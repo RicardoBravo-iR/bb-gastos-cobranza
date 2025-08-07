@@ -233,17 +233,36 @@ function EliminacionEstatusCuentaAExcluir({
           <div className={styles.formGroup}>
             <FilteredSearchEstatusInput
               label="ESTATUS DE CUENTA:"
-              placeholder="Busca un estatus de cuenta..."
+              placeholder="Busca por Estatus de Cuenta..."
               refreshKey={refreshKey}
+              filterBy="estatusCta"
               onSelect={(estatus) => {
                 setSelectedEstatus(estatus);
                 setFormData({
                   estatusCta: estatus.estatusCta,
                 });
               }}
-              filterBy="estatusCta"
+              onClear={() => {
+                setSelectedEstatus(null);
+                setFormData({
+                  estatusCta: "",
+                });
+              }}
+              minCharsToSearch={1}
             />
           </div>
+          {selectedEstatus && (
+            <div style={{ marginTop: "2rem" }}>
+              <Table
+                data={[selectedEstatus]}
+                rowsPerPage={1}
+                visibleColumns={["estatusCta"]}
+                headerLabels={{
+                  estatusCta: "Estatus de Cuenta"
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <DeleteButton type="submit">Eliminar Estatus de Cuenta</DeleteButton>
           </div>
@@ -263,7 +282,6 @@ function EliminacionEstatusCuentaAExcluir({
     </div>
   );
 }
-
 
 function ActualizacionEstatusCuentaAExcluir({
   refreshKey,
@@ -336,6 +354,19 @@ function ActualizacionEstatusCuentaAExcluir({
     }
   };
 
+  useEffect(() => {
+    if (!formData.estatusCta || !estatus || estatus.length === 0) {
+      setSelectedEstatus(null);
+      return;
+    }
+
+    const found = estatus.find(
+      (item) => item.estatusCta.toLowerCase() === formData.estatusCta.toLowerCase()
+    );
+
+    setSelectedEstatus(found ?? null);
+  }, [formData.estatusCta, estatus]);
+
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>
@@ -354,6 +385,7 @@ function ActualizacionEstatusCuentaAExcluir({
               label="ESTATUS DE CUENTA:"
               placeholder="Busca un estatus de cuenta..."
               refreshKey={refreshKey}
+              filterBy="estatusCta"
               onSelect={(estatus) => {
                 setSelectedEstatus(estatus);
                 setFormData((prev) => ({
@@ -361,7 +393,14 @@ function ActualizacionEstatusCuentaAExcluir({
                   estatusCta: estatus.estatusCta,
                 }));
               }}
-              filterBy="estatusCta"
+              onClear={() => {
+                setSelectedEstatus(null);
+                setFormData((prev) => ({
+                  ...prev,
+                  estatusCta: "",
+                }));
+              }}
+              minCharsToSearch={1}
             />
           </div>
 
@@ -381,6 +420,19 @@ function ActualizacionEstatusCuentaAExcluir({
               autoComplete="off"
             />
           </div>
+
+          {selectedEstatus && (
+            <div style={{ marginTop: "2rem" }}>
+              <Table
+                data={[selectedEstatus]}
+                rowsPerPage={1}
+                visibleColumns={["estatusCta"]}
+                headerLabels={{
+                  estatusCta: "Estatus de Cuenta",
+                }}
+              />
+            </div>
+          )}
 
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>

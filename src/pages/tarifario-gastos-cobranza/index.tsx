@@ -332,6 +332,25 @@ const handleConfirmDelete = async () => {
               required
             />
           </div>
+          {selectedServicio && (
+            <div style={{ marginBottom: "2rem" }}>
+              <Table
+                data={[selectedServicio]}
+                rowsPerPage={1}
+                visibleColumns={["codigoServicioFinanciero", "diasVencidoDesde", "diasVencidoHasta",
+                  "montoVencidoDesde", "montoVencidoHasta", "tarifaSinIva"
+                ]}
+                headerLabels={{
+                  codigoServicioFinanciero: "Servicio Financiero",
+                  diasVencidoDesde: "Dias Vencido Desde",
+                  diasVencidoHasta: "Dias Vencido Hasta",
+                  montoVencidoDesde: "Monto Vencido Desde",
+                  montoVencidoHasta: "Monto Vencido Hasta",
+                  tarifaSinIva: "Tarifa Sin IVA"
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <DeleteButton onClick={() => setShowModal(true)}>Eliminar Tarifa</DeleteButton>
           </div>
@@ -567,6 +586,25 @@ function ActualizacionTarifas({refreshKey, onRefresh,}: {
               autoComplete="off"
             />
           </div>
+          {selectedServicio && (
+            <div style={{ marginBottom: "2rem" }}>
+              <Table
+                data={[selectedServicio]}
+                rowsPerPage={1}
+                visibleColumns={["codigoServicioFinanciero", "diasVencidoDesde", "diasVencidoHasta",
+                  "montoVencidoDesde", "montoVencidoHasta", "tarifaSinIva"
+                ]}
+                headerLabels={{
+                  codigoServicioFinanciero: "Servicio Financiero",
+                  diasVencidoDesde: "Dias Vencido Desde",
+                  diasVencidoHasta: "Dias Vencido Hasta",
+                  montoVencidoDesde: "Monto Vencido Desde",
+                  montoVencidoHasta: "Monto Vencido Hasta",
+                  tarifaSinIva: "Tarifa Sin IVA"
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
               {submitting ? 'Actualizando...' : 'Actualizar Tarifa'}

@@ -204,17 +204,19 @@ function EliminacionClientesAExcluir({
     identificacion: "",
     fechaVigenciaHasta: "",
   });
-  const [selectedCliente, setSelectedCliente] = useState<ClienteAExcluir | null>(null);
 
+  const [selectedCliente, setSelectedCliente] = useState<ClienteAExcluir | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!selectedCliente) {
       Swal.fire("Error", "No se ha seleccionado un cliente válido.", "error");
       return;
     }
+
     setShowModal(true);
   };
 
@@ -226,8 +228,9 @@ function EliminacionClientesAExcluir({
     }
 
     setLoading(true);
+
     try {
-      await deleteClienteAExcluir(selectedCliente.cliente_id); // usa client_id
+      await deleteClienteAExcluir(selectedCliente.cliente_id);
 
       Swal.fire({
         title: "Cliente eliminado correctamente",
@@ -254,7 +257,6 @@ function EliminacionClientesAExcluir({
     }
   };
 
-  // Mantener valor actual para el modal
   const valorActual = {
     identificacion: selectedCliente?.identificacion ?? "",
     fechaVigenciaHasta: selectedCliente?.fechaVigenciaHasta ?? "",
@@ -269,6 +271,7 @@ function EliminacionClientesAExcluir({
       {loadingData && (
         <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes a excluir..." />
       )}
+
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
@@ -286,9 +289,29 @@ function EliminacionClientesAExcluir({
                   fechaVigenciaHasta: cliente.fechaVigenciaHasta,
                 });
               }}
+              onClear={() => {
+                setSelectedCliente(null);
+                setFormData({
+                  identificacion: "",
+                  fechaVigenciaHasta: "",
+                });
+              }}
               minCharsToSearch={1}
             />
           </div>
+          {selectedCliente && (
+            <div style={{ marginTop: "2rem" }}>
+              <Table
+                data={[selectedCliente]}
+                rowsPerPage={1}
+                visibleColumns={["identificacion", "fechaVigenciaHasta"]}
+                headerLabels={{
+                  identificacion: "Identificación",
+                  fechaVigenciaHasta: "Fecha Vigencia Hasta",
+                }}
+              />
+            </div>
+          )}
           <div className={styles.buttonContainer}>
             <DeleteButton type="submit">Eliminar Cliente</DeleteButton>
           </div>
@@ -298,7 +321,7 @@ function EliminacionClientesAExcluir({
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar al cliente con identificacion "${valorActual.identificacion}" y con fecha de vigencia: "${valorActual.fechaVigenciaHasta}"?`}
+        message={`¿Deseas eliminar al cliente con identificación "${valorActual.identificacion}" y con fecha de vigencia: "${valorActual.fechaVigenciaHasta}"?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
@@ -317,6 +340,7 @@ function ActualizacionClientesAExcluir({
   onRefresh: () => void;
 }) {
   const { data: clientes, loading, error } = getClientesAExcluir(refreshKey);
+
   const [formData, setFormData] = useState({
     identificacion: "",
     identificacionCliente: "",
@@ -327,7 +351,6 @@ function ActualizacionClientesAExcluir({
   const [showModal, setShowModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<ClienteAExcluir | null>(null);
 
-  // Valores actuales para mostrar en el modal
   const valorActual = {
     identificacion: selectedCliente?.identificacion ?? "",
     fechaVigenciaHasta: selectedCliente?.fechaVigenciaHasta ?? "",
@@ -410,17 +433,25 @@ function ActualizacionClientesAExcluir({
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FilteredSearchClientInput
-              label="IDENTIFICACION:"
+              label="IDENTIFICACIÓN:"
               placeholder="Busca por identificación..."
               refreshKey={refreshKey}
               filterBy="identificacion"
               onSelect={(cliente) => {
                 setSelectedCliente(cliente);
-                setFormData((prev) => ({
-                  ...prev,
+                setFormData({
                   identificacion: cliente.identificacion,
-                  fechaVigenciaHasta: cliente.fechaVigenciaHasta,
-                }));
+                  identificacionCliente: formData.identificacionCliente,
+                  fechaVigenciaHasta: formData.fechaVigenciaHasta,
+                });
+              }}
+              onClear={() => {
+                setSelectedCliente(null);
+                setFormData({
+                  identificacion: formData.identificacion,
+                  identificacionCliente: formData.identificacionCliente,
+                  fechaVigenciaHasta: formData.fechaVigenciaHasta,
+                });
               }}
               minCharsToSearch={1}
             />
@@ -449,6 +480,20 @@ function ActualizacionClientesAExcluir({
               autoComplete="off"
             />
           </div>
+
+          {selectedCliente && (
+            <div style={{ marginTop: "2rem" }}>
+              <Table
+                data={[selectedCliente]}
+                rowsPerPage={1}
+                visibleColumns={["identificacion", "fechaVigenciaHasta"]}
+                headerLabels={{
+                  identificacion: "Identificación",
+                  fechaVigenciaHasta: "Fecha Vigencia Hasta",
+                }}
+              />
+            </div>
+          )}
 
           <div className={styles.buttonContainer}>
             <RegisterButton type="submit" disabled={submitting}>
