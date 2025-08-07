@@ -367,7 +367,7 @@ function ActualizacionClientesAExcluir({
     if (!selectedCliente) {
       Swal.fire(
         "Cliente no encontrado",
-        `El cliente con identificación "${formData.identificacion}" no existe.`,
+        `El cliente que se desea eliminar no existe.`,
         "error"
       );
       return;
@@ -382,7 +382,6 @@ function ActualizacionClientesAExcluir({
       setShowModal(false);
       return;
     }
-
     setShowModal(false);
     setSubmitting(true);
 
@@ -428,7 +427,7 @@ function ActualizacionClientesAExcluir({
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FilteredSearchClientInput
-              label="IDENTIFICACIÓN:"
+              label="IDENTIFICACION:"
               placeholder="Busca por identificación..."
               refreshKey={refreshKey}
               filterBy="identificacion"

@@ -291,19 +291,31 @@ function ActualizacionEstatusCuentaAExcluir({
   onRefresh: () => void;
 }) {
   const { data: estatus, loading, error } = getEstatusCuentaExcluir(refreshKey);
+
   const [formData, setFormData] = useState({
     estatusCta: "",
     estatusCtaActualizado: "",
   });
+
   const [selectedEstatus, setSelectedEstatus] = useState<EstatusCuentaExcluir | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.estatusCta || !formData.estatusCtaActualizado) {
-      Swal.fire("Campos requeridos", "Debes completar todos campos.", "warning");
+      Swal.fire("Campos requeridos", "Debes completar todos los campos.", "warning");
+      return;
+    }
+
+    if (!selectedEstatus) {
+      Swal.fire("Estatus no encontrado", "El estatus de cuenta que se desea eliminar no existe.", "error");
       return;
     }
 
@@ -311,12 +323,17 @@ function ActualizacionEstatusCuentaAExcluir({
   };
 
   const handleConfirmUpdate = async () => {
+    if (!selectedEstatus) {
+      Swal.fire("Error", "No hay estatus de cuenta seleccionado válido.", "error");
+      setShowModal(false);
+      return;
+    }
     setShowModal(false);
     setSubmitting(true);
 
     try {
       await updateEstatusCuentaAExcluir({
-        status_id: selectedEstatus?.status_id!,
+        status_id: selectedEstatus.status_id,
         estatusCta: formData.estatusCtaActualizado,
       });
 
@@ -339,19 +356,6 @@ function ActualizacionEstatusCuentaAExcluir({
     }
   };
 
-  useEffect(() => {
-    if (!estatus || estatus.length === 0) {
-      setSelectedEstatus(null);
-      return;
-    }
-
-    const found = estatus.find(
-      (item) => item.estatusCta.toLowerCase() === formData.estatusCta.toLowerCase()
-    );
-
-    setSelectedEstatus(found ?? null);
-  }, [formData.estatusCta, estatus]);
-
   return (
     <div className={styles.pageContainer}>
       <h2 className={styles.operationTitle}>
@@ -373,23 +377,17 @@ function ActualizacionEstatusCuentaAExcluir({
               filterBy="estatusCta"
               onSelect={(estatus) => {
                 setSelectedEstatus(estatus);
-                setFormData((prev) => ({
-                  ...prev,
+                setFormData({
                   estatusCta: estatus.estatusCta,
-                }));
+                  estatusCtaActualizado: formData.estatusCtaActualizado,
+                });
               }}
               onClear={() => {
                 setSelectedEstatus(null);
-                setFormData((prev) => ({
-                  ...prev,
-                  estatusCta: "",
-                }));
-              }}
-              onInputChange={(value) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  estatusCta: value,
-                }));
+                setFormData({
+                  estatusCta: formData.estatusCta,
+                  estatusCtaActualizado: formData.estatusCtaActualizado,
+                });
               }}
               minCharsToSearch={1}
             />
@@ -401,18 +399,12 @@ function ActualizacionEstatusCuentaAExcluir({
               name="estatusCtaActualizado"
               value={formData.estatusCtaActualizado}
               placeholder="Ingrese el nuevo valor del estatus de cuenta..."
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  estatusCtaActualizado: e.target.value,
-                }))
-              }
+              onChange={handleChange}
               required
               autoComplete="off"
             />
           </div>
 
-          {/* Mostrar tabla solo si hay un estatus seleccionado válido */}
           {selectedEstatus && (
             <div style={{ marginTop: "2rem" }}>
               <Table
@@ -447,6 +439,7 @@ function ActualizacionEstatusCuentaAExcluir({
     </div>
   );
 }
+
 
 export default function EstatusCuentaAExcluir() {
   const [activeTab, setActiveTab] = useState('Consulta');
