@@ -202,7 +202,6 @@ function EliminacionClientesAExcluir({
 
   const [formData, setFormData] = useState({
     identificacion: "",
-    fechaVigenciaHasta: "",
   });
 
   const [selectedCliente, setSelectedCliente] = useState<ClienteAExcluir | null>(null);
@@ -211,12 +210,10 @@ function EliminacionClientesAExcluir({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!selectedCliente) {
       Swal.fire("Error", "No se ha seleccionado un cliente válido.", "error");
       return;
     }
-
     setShowModal(true);
   };
 
@@ -228,7 +225,6 @@ function EliminacionClientesAExcluir({
     }
 
     setLoading(true);
-
     try {
       await deleteClienteAExcluir(selectedCliente.cliente_id);
 
@@ -239,15 +235,12 @@ function EliminacionClientesAExcluir({
         timerProgressBar: true,
       });
 
-      setFormData({
-        identificacion: "",
-        fechaVigenciaHasta: "",
-      });
       setSelectedCliente(null);
+      setFormData({ identificacion: "" });
       onRefresh();
     } catch (err: any) {
       Swal.fire({
-        title: "Error al eliminar cliente",
+        title: "Error al eliminar el cliente",
         icon: "error",
         text: err.message || "",
       });
@@ -258,8 +251,7 @@ function EliminacionClientesAExcluir({
   };
 
   const valorActual = {
-    identificacion: selectedCliente?.identificacion ?? "",
-    fechaVigenciaHasta: selectedCliente?.fechaVigenciaHasta ?? "",
+    cliente: selectedCliente?.identificacion ?? "",
   };
 
   return (
@@ -269,16 +261,15 @@ function EliminacionClientesAExcluir({
       </h2>
 
       {loadingData && (
-        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes a excluir..." />
+        <LoadingSpinner size="lg" color="#0d6efd" text="Cargando clientes..." />
       )}
-
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loadingData && !error && (
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FilteredSearchClientInput
-              label="IDENTIFICACIÓN:"
+              label="IDENTIFICACION:"
               placeholder="Busca por identificación..."
               refreshKey={refreshKey}
               filterBy="identificacion"
@@ -286,32 +277,36 @@ function EliminacionClientesAExcluir({
                 setSelectedCliente(cliente);
                 setFormData({
                   identificacion: cliente.identificacion,
-                  fechaVigenciaHasta: cliente.fechaVigenciaHasta,
                 });
               }}
+              onInputChange={(value) => {
+                setFormData({ identificacion: value });
+                const match = data?.find(
+                  (c) => c.identificacion.toLowerCase() === value.trim().toLowerCase()
+                );
+                setSelectedCliente(match ?? null);
+              }}
               onClear={() => {
+                setFormData({ identificacion: "" });
                 setSelectedCliente(null);
-                setFormData({
-                  identificacion: "",
-                  fechaVigenciaHasta: "",
-                });
               }}
               minCharsToSearch={1}
             />
           </div>
+
           {selectedCliente && (
             <div style={{ marginTop: "2rem" }}>
               <Table
                 data={[selectedCliente]}
                 rowsPerPage={1}
-                visibleColumns={["identificacion", "fechaVigenciaHasta"]}
+                visibleColumns={["identificacion"]}
                 headerLabels={{
                   identificacion: "Identificación",
-                  fechaVigenciaHasta: "Fecha Vigencia Hasta",
                 }}
               />
             </div>
           )}
+
           <div className={styles.buttonContainer}>
             <DeleteButton type="submit">Eliminar Cliente</DeleteButton>
           </div>
@@ -321,7 +316,7 @@ function EliminacionClientesAExcluir({
       <ConfirmationModal
         isOpen={showModal}
         title="Confirmar eliminación"
-        message={`¿Deseas eliminar al cliente con identificación "${valorActual.identificacion}" y con fecha de vigencia: "${valorActual.fechaVigenciaHasta}"?`}
+        message={`¿Deseas eliminar el cliente "${valorActual.cliente}"?`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}

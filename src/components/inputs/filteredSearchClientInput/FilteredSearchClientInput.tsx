@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from 'react';
+import React, { useState, useEffect, useMemo, useRef, KeyboardEvent } from "react";
 import {
   Wrapper,
   InputGroup,
@@ -7,30 +7,35 @@ import {
   Dropdown,
   Item,
   NoResults,
-} from './FilteredSearchClientInput.styles';
-import { getClientesAExcluir, ClienteAExcluir } from '@/api/get-clientes-excluir';
+} from "./FilteredSearchClientInput.styles";
+import {
+  getClientesAExcluir,
+  ClienteAExcluir,
+} from "@/api/get-clientes-excluir";
 
 interface FilteredSearchClientInputProps {
   label?: string;
   placeholder?: string;
   onSelect?: (cliente: ClienteAExcluir) => void;
   onClear?: () => void;
+  onInputChange?: (value: string) => void;
   refreshKey?: number;
-  filterBy?: 'identificacion' | 'cliente_id' | 'both';
+  filterBy?: "identificacion" | "cliente_id" | "both";
   minCharsToSearch?: number;
 }
 
 export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps> = ({
-  label = 'Buscar cliente a excluir',
-  placeholder = 'Escribe identificación o ID...',
+  label = "Buscar cliente",
+  placeholder = "Escribe la identificación o ID...",
   onSelect,
   onClear,
+  onInputChange,
   refreshKey = 0,
-  filterBy = 'both',
+  filterBy = "both",
   minCharsToSearch = 1,
 }) => {
-  const { data: clientes, loading, error } = getClientesAExcluir(refreshKey);
-  const [query, setQuery] = useState('');
+  const { data: clientesList, loading, error } = getClientesAExcluir(refreshKey);
+  const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -46,67 +51,52 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
     if (debouncedQuery.length < minCharsToSearch) return [];
 
     const lower = debouncedQuery.toLowerCase();
-    return clientes
+    return clientesList
       .filter((c) => {
-        const byId =
-          (filterBy === 'cliente_id' || filterBy === 'both') &&
-          c.cliente_id?.toLowerCase().includes(lower);
         const byIdent =
-          (filterBy === 'identificacion' || filterBy === 'both') &&
+          (filterBy === "identificacion" || filterBy === "both") &&
           c.identificacion?.toLowerCase().includes(lower);
-        return Boolean(byId || byIdent);
+        const byId =
+          (filterBy === "cliente_id" || filterBy === "both") &&
+          c.cliente_id?.toLowerCase().includes(lower);
+        return Boolean(byIdent || byId);
       })
       .sort((a, b) => {
-        const identA = (a.identificacion || '').toLowerCase();
-        const identB = (b.identificacion || '').toLowerCase();
-        return identA.localeCompare(identB);
+        const aText = (a.identificacion || a.cliente_id || "").toLowerCase();
+        const bText = (b.identificacion || b.cliente_id || "").toLowerCase();
+        return aText.localeCompare(bText);
       });
-  }, [debouncedQuery, clientes, filterBy, minCharsToSearch]);
-
-  // Llama onClear si no hay resultados
-  useEffect(() => {
-    if (onClear) {
-      if (
-        debouncedQuery.length < minCharsToSearch ||
-        filtered.length === 0 ||
-        !clientes.some(
-          (c) => c.identificacion?.toLowerCase() === debouncedQuery.toLowerCase()
-        )
-      ) {
-        onClear();
-      }
-    }
-  }, [debouncedQuery, filtered, minCharsToSearch, onClear, clientes]);
+  }, [debouncedQuery, clientesList, filterBy, minCharsToSearch]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setVisible(false);
         setHighlightedIndex(-1);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!visible) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightedIndex((prev) => Math.min(prev + 1, filtered.length - 1));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlightedIndex((prev) => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
         selectCliente(filtered[highlightedIndex]);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setVisible(false);
       setHighlightedIndex(-1);
-      setQuery('');
-      if (onClear) onClear();
+      setQuery("");
+      onClear?.();
     }
   };
 
@@ -124,18 +114,17 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
       setVisible(false);
     }
     setHighlightedIndex(-1);
-  }, [debouncedQuery, filtered]);
+  }, [debouncedQuery, filtered, minCharsToSearch]);
 
   const handleBlur = () => {
-    // Si el input pierde el foco, intenta encontrar coincidencia exacta
-    const match = clientes.find(
-      (c) =>
-        (filterBy === 'identificacion' || filterBy === 'both') &&
-        c.identificacion?.toLowerCase() === query.trim().toLowerCase()
+    const match = clientesList.find(
+      (c) => (c.identificacion || "").toLowerCase() === query.trim().toLowerCase()
     );
     if (match) {
       selectCliente(match);
     } else {
+      setVisible(false);
+      setHighlightedIndex(-1);
       onClear?.();
     }
   };
@@ -143,17 +132,20 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
   return (
     <Wrapper ref={containerRef}>
       <InputGroup>
-        <Label htmlFor="filtered-search-input">{label}</Label>
-        <div style={{ position: 'relative', flex: 1 }}>
+        <Label htmlFor="filtered-client-input">{label}</Label>
+        <div style={{ position: "relative", flex: 1 }}>
           <Input
-            id="filtered-search-input"
+            id="filtered-client-input"
             ref={inputRef}
             placeholder={placeholder}
             value={query}
             onChange={(e) => {
               const val = e.target.value;
               setQuery(val);
-              if (val.trim() === '' && onClear) onClear();
+              onInputChange?.(val);
+              if (val.trim() === "") {
+                onClear?.();
+              }
             }}
             onFocus={() => {
               if (filtered.length > 0) setVisible(true);
@@ -164,7 +156,7 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
             aria-autocomplete="list"
             aria-expanded={visible}
             aria-activedescendant={
-              highlightedIndex >= 0 ? `filtered-item-${highlightedIndex}` : undefined
+              highlightedIndex >= 0 ? `filtered-client-item-${highlightedIndex}` : undefined
             }
           />
           {visible && (
@@ -179,7 +171,7 @@ export const FilteredSearchClientInput: React.FC<FilteredSearchClientInputProps>
                 filtered.map((c, idx) => (
                   <Item
                     key={`${c.cliente_id}-${idx}`}
-                    id={`filtered-item-${idx}`}
+                    id={`filtered-client-item-${idx}`}
                     highlighted={idx === highlightedIndex}
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     onMouseDown={(e) => e.preventDefault()}

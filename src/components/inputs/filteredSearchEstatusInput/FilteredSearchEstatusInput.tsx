@@ -108,20 +108,19 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
     setHighlightedIndex(-1);
   }, [debouncedQuery, filtered, minCharsToSearch]);
 
-  const handleBlur = () => {
-    const match = estatusList.find(
-      (e) =>
-        (e.estatusCta || "").toLowerCase() === query.trim().toLowerCase()
-    );
-    if (match) {
-      selectEstatus(match);
-    } else {
-      setQuery("");
-      setVisible(false);
-      setHighlightedIndex(-1);
-      onClear?.();
-    }
-  };
+const handleBlur = () => {
+  const match = estatusList.find(
+    (e) =>
+      (e.estatusCta || "").toLowerCase() === query.trim().toLowerCase()
+  );
+  if (match) {
+    selectEstatus(match);
+  } else {
+    setVisible(false);
+    setHighlightedIndex(-1);
+    onClear?.();
+  }
+};
 
   return (
     <Wrapper ref={containerRef}>
