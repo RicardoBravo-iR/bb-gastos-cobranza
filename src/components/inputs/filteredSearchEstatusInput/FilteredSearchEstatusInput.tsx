@@ -10,6 +10,7 @@ interface FilteredSearchEstatusInputProps {
   placeholder?: string;
   onSelect?: (estatus: EstatusCuentaExcluir) => void;
   onClear?: () => void;
+  onInputChange?: (value: string) => void; // ✅ nuevo prop
   refreshKey?: number;
   filterBy?: "estatusCta" | "status_id" | "both";
   minCharsToSearch?: number;
@@ -20,6 +21,7 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
   placeholder = "Escribe el estatus o ID...",
   onSelect,
   onClear,
+  onInputChange, // ✅ agregado
   refreshKey = 0,
   filterBy = "both",
   minCharsToSearch = 1,
@@ -134,6 +136,7 @@ export const FilteredSearchEstatusInput: React.FC<FilteredSearchEstatusInputProp
             onChange={(e) => {
               const val = e.target.value;
               setQuery(val);
+              onInputChange?.(val); // ✅ Notificamos al padre
               if (val.trim() === "") {
                 onClear?.();
               }

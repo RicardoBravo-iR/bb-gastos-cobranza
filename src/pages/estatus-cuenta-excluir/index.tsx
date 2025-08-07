@@ -307,31 +307,16 @@ function ActualizacionEstatusCuentaAExcluir({
       return;
     }
 
-    if (!selectedEstatus) {
-      Swal.fire(
-        "Estatus de Cuenta no encontrado",
-        `El Estatus de Cuenta "${formData.estatusCta}" no existe.`,
-        "error"
-      );
-      return;
-    }
-
     setShowModal(true);
   };
 
   const handleConfirmUpdate = async () => {
-    if (!selectedEstatus) {
-      Swal.fire("Error", "No hay estatus de cuenta seleccionado válido.", "error");
-      setShowModal(false);
-      return;
-    }
-
     setShowModal(false);
     setSubmitting(true);
 
     try {
       await updateEstatusCuentaAExcluir({
-        status_id: selectedEstatus.status_id,
+        status_id: selectedEstatus?.status_id!,
         estatusCta: formData.estatusCtaActualizado,
       });
 
@@ -355,7 +340,7 @@ function ActualizacionEstatusCuentaAExcluir({
   };
 
   useEffect(() => {
-    if (!formData.estatusCta || !estatus || estatus.length === 0) {
+    if (!estatus || estatus.length === 0) {
       setSelectedEstatus(null);
       return;
     }
@@ -400,6 +385,12 @@ function ActualizacionEstatusCuentaAExcluir({
                   estatusCta: "",
                 }));
               }}
+              onInputChange={(value) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  estatusCta: value,
+                }));
+              }}
               minCharsToSearch={1}
             />
           </div>
@@ -421,6 +412,7 @@ function ActualizacionEstatusCuentaAExcluir({
             />
           </div>
 
+          {/* Mostrar tabla solo si hay un estatus seleccionado válido */}
           {selectedEstatus && (
             <div style={{ marginTop: "2rem" }}>
               <Table
