@@ -1,7 +1,7 @@
 import { API_SAC } from "@/config";
 import { getCognitoToken } from "@/api/auth-cognito";
 
-export async function postParametroGeneral(parametro: string, valor: string): Promise<void> {
+export async function postParametroGeneral(parametro: string, valor: string, descripcion: string): Promise<void> {
   try {
     const token = await getCognitoToken();
 
@@ -12,7 +12,7 @@ export async function postParametroGeneral(parametro: string, valor: string): Pr
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
-      body: JSON.stringify({ parametro, valor }),
+      body: JSON.stringify({ parametro, valor, descripcion }),
     });
 
     if (!response.ok) {

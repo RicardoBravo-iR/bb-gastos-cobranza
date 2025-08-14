@@ -39,7 +39,7 @@ export const TableCell = styled.td`
   color: #333;
   white-space: nowrap;
   background-color: white;
-  max-width: 10rem;
+  max-width: 30rem;
   overflow: hidden;
   text-overflow: ellipsis;
 `;

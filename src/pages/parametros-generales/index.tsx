@@ -50,8 +50,8 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
             label="Exportar Excel"
             sortBy="parametro"
             direction="asc"
-            columnOrder={['parametro', 'valor']}
-            columnHeaders={{ parametro: 'parametro', valor: 'valor' }}
+            columnOrder={['parametro', 'valor', 'descripcion']}
+            columnHeaders={{ parametro: 'parametro', valor: 'valor', descripcion: 'descripcion' }}
           />
         </div>
       </form>
@@ -62,8 +62,8 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
       {!loading && !error && (
         <Table
           data={filteredRows}
-          visibleColumns={['parametro', 'valor']}
-          headerLabels={{ parametro: 'Nemónico', valor: 'Valor' }}
+          visibleColumns={['parametro', 'valor', 'descripcion']}
+          headerLabels={{ parametro: 'Nemónico', valor: 'Valor', descripcion: 'Descripción' }}
         />
       )}
     </div>
@@ -71,7 +71,7 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
 }
 
 function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
-  const [formData, setFormData] = useState({ parametro: '', valor: '' });
+  const [formData, setFormData] = useState({ parametro: '', valor: '', descripcion: '' });
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -88,13 +88,13 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      await postParametroGeneral(formData.parametro, formData.valor);
+      await postParametroGeneral(formData.parametro, formData.valor, formData.descripcion);
       Swal.fire({
         title: "Parámetro correctamente ingresado!",
         icon: "success",
         draggable: true
       });
-      setFormData({ parametro: '', valor: '' });
+      setFormData({ parametro: '', valor: '', descripcion: '' });
       onRefresh()
     } catch (err) {
       Swal.fire({
@@ -129,6 +129,17 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
             name="valor"
             value={formData.valor}
             placeholder="Ingrese el valor del parámetro..."
+            onChange={handleChange}
+            required
+            autoComplete="off"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <FormInput
+            label="DESCRIPCIÓN:"
+            name="descripcion"
+            value={formData.descripcion}
+            placeholder="Ingrese la descripción del parámetro..."
             onChange={handleChange}
             required
             autoComplete="off"
@@ -236,10 +247,11 @@ const valorActual = selectedParametro?.valor ?? "";
               <Table
                 data={[selectedParametro]}
                 rowsPerPage={1}
-                visibleColumns={["parametro", "valor"]}
+                visibleColumns={["parametro", "valor", "descripcion"]}
                 headerLabels={{
-                  identificacion: "Parámetro",
-                  fechaVigenciaHasta: "Valor",
+                  parametro: "Nemónico",
+                  valor: "Valor",
+                  descripcion: "Descripción"
                 }}
               />
             </div>
@@ -267,7 +279,7 @@ const valorActual = selectedParametro?.valor ?? "";
 
 function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number; onRefresh: () => void }) {
   const { data: parametros, loading, error } = getParametrosGenerales(refreshKey);
-  const [formData, setFormData] = useState({ parametro: "", valor: "" });
+  const [formData, setFormData] = useState({ parametro: "", valor: "", descripcion: "" });
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -308,9 +320,9 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
     setShowModal(false);
     setSubmitting(true);
     try {
-      await updateParametroGeneral(formData.parametro, formData.valor);
+      await updateParametroGeneral(formData.parametro, formData.valor, formData.descripcion);
       Swal.fire("Actualización exitosa", `El parámetro "${formData.parametro}" fue actualizado.`, "success");
-      setFormData({ parametro: "", valor: "" });
+      setFormData({ parametro: "", valor: "", descripcion: "" });
       onRefresh();
     } catch (err: any) {
       Swal.fire("Error", err.message || "Ocurrió un error al actualizar.", "error");
@@ -355,15 +367,27 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
               autoComplete="off"
             />
           </div>
+          <div className={styles.formGroup}>
+            <FormInput
+              label="DESCRIPCIÓN:"
+              name="descripcion"
+              value={formData.descripcion}
+              placeholder="Ingrese la nueva descripción..."
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
           {selectedParametro && (
             <div style={{ marginBottom: "2rem" }}>
               <Table
                 data={[selectedParametro]}
                 rowsPerPage={1}
-                visibleColumns={["parametro", "valor"]}
+                visibleColumns={["parametro", "valor", "descripcion"]}
                 headerLabels={{
-                  identificacion: "Parámetro",
-                  fechaVigenciaHasta: "Valor",
+                  parametro: "Nemónico",
+                  valor: "Valor",
+                  descripcion: "Descripción"
                 }}
               />
             </div>

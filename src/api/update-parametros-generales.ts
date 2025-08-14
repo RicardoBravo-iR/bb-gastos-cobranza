@@ -9,7 +9,7 @@ import { getCognitoToken } from "@/api/auth-cognito";
  * @param parametro - Nombre del parámetro (no se modifica)
  * @param nuevoValor - Nuevo valor que se desea asignar
  */
-export async function updateParametroGeneral(parametro: string, nuevoValor: string): Promise<void> {
+export async function updateParametroGeneral(parametro: string, nuevoValor: string, nuevaDescripcion: string): Promise<void> {
   try {
     console.log(`[PATCH] Iniciando actualización del parámetro "${parametro}" con el nuevo valor "${nuevoValor}"...`);
 
@@ -22,7 +22,7 @@ export async function updateParametroGeneral(parametro: string, nuevoValor: stri
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ parametro, valor: nuevoValor }),
+      body: JSON.stringify({ parametro, valor: nuevoValor, descripcion: nuevaDescripcion }),
     });
 
     if (!response.ok) {
