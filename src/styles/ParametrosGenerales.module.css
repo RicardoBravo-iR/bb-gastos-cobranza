@@ -1,6 +1,10 @@
 .pageContainer {
   text-align: center;
   padding: 0 20px 20px 20px;
+  display: flex; 
+  justify-content: center; 
+  flex-direction: column; 
+  align-items: center; 
 }
 
 .tabsContainer {
@@ -70,7 +74,7 @@
 
 /* Estilos para el formulario de ingreso */
 .formContainer {
-  max-width: 80%;
+  width: 80%;
   margin: 0 auto;
   text-align: left;
   margin-top: 3rem;
@@ -144,6 +148,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    width: 90%;
   }
 
 

@@ -15,7 +15,7 @@ export const StyledTable = styled.table`
 `;
 
 export const TableHeader = styled.th`
-  padding: 6px 6px;
+  padding: 6px 12px;
   border: 1px solid #e0e0e0;
   text-align: center;
   background-color: white; /* Cambiado de gris a blanco */
@@ -33,7 +33,7 @@ export const TableRow = styled.tr`
 `;
 
 export const TableCell = styled.td`
-  padding: 6px 6px;
+  padding: 3px 12px;
   border: 1px solid #e0e0e0;
   text-align: center;
   color: #333;

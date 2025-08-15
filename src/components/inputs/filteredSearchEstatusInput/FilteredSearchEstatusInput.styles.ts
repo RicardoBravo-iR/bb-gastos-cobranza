@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
 
 export const InputGroup = styled.div`
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 1.6fr 3fr;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;

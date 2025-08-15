@@ -37,7 +37,7 @@ function ConsultaParametros({ refreshKey }: { refreshKey: number }) {
       {/* Filtro */}
       <form className={styles.filterContainer}>
         <FilteredInput
-          label="PARÁMETRO:"
+          label="NEMÓNICO:"
           id="paramFilter"
           value={filter}
           placeholder="Buscar parámetro..."
@@ -114,7 +114,7 @@ function IngresoParametros({ onRefresh }: { onRefresh: () => void }) {
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <div className={styles.formGroup}>
           <FormInput
-            label="PARÁMETRO:"
+            label="NEMÓNICO:"
             name="parametro"
             value={formData.parametro}
             placeholder="Ingrese nemónico del parámetro..."
@@ -234,7 +234,7 @@ const valorActual = selectedParametro?.valor ?? "";
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="PARÁMETRO:"
+              label="NEMÓNICO:"
               name="parametro"
               value={formData.parametro}
               options={parametroOptions}
@@ -348,7 +348,7 @@ function ActualizacionParametros({ refreshKey, onRefresh }: { refreshKey: number
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formGroup}>
             <FormSelect
-              label="PARÁMETRO:"
+              label="NEMÓNICO:"
               name="parametro"
               value={formData.parametro}
               options={parametroOptions}
